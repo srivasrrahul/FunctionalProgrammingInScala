@@ -279,13 +279,13 @@ object ListOperations {
     }
   }
 
-  def fold[A,B](node : Tree[A],default : B)(f: (Tree[A],B) => B) = {
-    node match {
-      case Leaf(v) => default
-      case Branch(left,right) =>
-        f(left,)
-    }
-  }
+//  def fold[A,B](node : Tree[A],default : B)(f: (Tree[A],B) => B) = {
+//    node match {
+//      case Leaf(v) => default
+//      case Branch(left,right) =>
+//        f(left,)
+//    }
+//  }
 
 
 
