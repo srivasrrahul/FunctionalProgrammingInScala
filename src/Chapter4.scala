@@ -54,16 +54,33 @@ case object NoneOption
 
 sealed trait MyEither[+E,+A] {
   def map[B](f: A => B) : MyEither[E,B]
-  //def flatMap[EE >: E,B](f: A => MyEither[EE,B]) : MyEither[EE,B]
+  def flatMap[EE >: E,B](f: A => MyEither[EE,B]) : MyEither[EE,B]
+  def orElse[EE >: E, B >:A](b : => MyEither[EE,B]) : MyEither[EE,B]
 }
 case class MyLeft[+E](value : E) extends MyEither[E,Nothing] {
   override def map[B](f: (Nothing) => B): MyEither[E, B] = {
+    MyLeft(value)
+  }
+
+  override def flatMap[EE >: E, B](f: (Nothing) => MyEither[EE, B]): MyEither[EE, B] = {
+    MyLeft(value)
+  }
+
+  override def orElse[EE >: E, B >: Nothing](b: => MyEither[EE, B]): MyEither[EE, B] = {
     MyLeft(value)
   }
 }
 case class MyRight[+A](value : A) extends MyEither[Nothing,A] {
   override def map[B](f: (A) => B): MyEither[Nothing, B] = {
     MyRight(f(value))
+  }
+
+  override def flatMap[EE >: Nothing, B](f: (A) => MyEither[EE, B]): MyEither[EE, B] = {
+    f(value)
+  }
+
+  override def orElse[EE >: Nothing, B >: A](b: => MyEither[EE, B]): MyEither[EE, B] = {
+    b
   }
 }
 
@@ -154,6 +171,34 @@ object MainClass {
       case e : Exception => MyLeft(e)
     }
   }
+
+  def sequenceWithEither[E,A](a : List[Either[E,A]]) : Either[E,List[A]] = {
+    val l = a.filter(_.isLeft == false)
+
+    if (l.length != a.length) {
+      Left(a.find(_.isLeft == true).get.left.get)
+    }else {
+      Right(l.map(_.right.get))
+    }
+  }
+
+  def traverseWithWither[Exception,A,B] (as : List[A])(f : A => Either[Exception,B]) : Either[A,List[B]] = {
+    def traverseInternal(asLst : List[A]) : List[B] = {
+      asLst match {
+        case Nil => Nil
+        case x::xs => {
+          val z = f(x)
+          z match {
+            case l : Left[Exception,B] => traverseInternal(xs)
+            case r : Right[Exception,B] => r.right.get::traverseInternal(asLst)
+          }
+        }
+      }
+    }
+
+    Right(traverseInternal(as))
+  }
+
   def main(args : Array[String]): Unit = {
     //failingFunction(10)
     //var s = Seq(1.0,12.0,2.0)
