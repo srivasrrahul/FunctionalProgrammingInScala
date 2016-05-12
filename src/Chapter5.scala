@@ -16,6 +16,7 @@ sealed trait Stream[+A] {
   def flatMap[B >: A](transform : A => Stream[B]) : Stream[B]
   def append[B >: A](lst : Stream[B]) : Stream[B]
 
+
 }
 case object Empty extends Stream[Nothing] {
   override def toList: List[Nothing] = {
@@ -114,7 +115,7 @@ case class Cons[+A](h : () => A,t : () => Stream[A]) extends Stream[A] {
   override def takeWhileUsingFold(predicate: (A) => Boolean): Stream[A] = {
     def internalFunc(x : A,y : => Stream[A]) : Stream[A] = {
       if (predicate(x)) {
-        StreamUtil.cons(() => x, () => y)
+        Stream.cons( x,  y)
       } else {
         Empty
       }
@@ -175,15 +176,131 @@ case class Cons[+A](h : () => A,t : () => Stream[A]) extends Stream[A] {
   }
 }
 
-object StreamUtil {
-  def cons[A](hd :() => A,tl : () => Stream[A]) : Stream[A] = {
+object Stream {
+  def cons[A](hd : => A,tl : => Stream[A]) : Stream[A] = {
     lazy val head = hd
     lazy val tail = tl
-    Cons(head,tail)
+    Cons(() => head,() => tail)
   }
 
   def empty[A] : Stream[A] = Empty
 
+  def constant[A](a : A) : Stream[A] = {
+    lazy val constLst : Stream[A]= cons(a,constLst)
+    constLst
+  }
+
+  def from(n: Int) : Stream[Int] = {
+
+    lazy  val incLst : Stream[Int] = cons(n,from(n+1))
+    incLst
+  }
+
+  def fibs() : Stream[Int] = {
+    def fibsInternal(x : Int,y : Int) : Stream[Int] = {
+      cons(x+y,fibsInternal(y,x+y))
+    }
+    lazy val fibLst : Stream[Int] = fibsInternal(0,1)
+    fibLst
+  }
+
+  def unfold[A,S](z: S)(f : S => Option[(A,S)]) : Stream[A] = {
+
+
+    lazy val nextState : Option[(A,S)]= f(z)
+    def internal(): Stream[A] = {
+      nextState match {
+        case Some(x) => cons(nextState.get._1,unfold(nextState.get._2)(f))
+        case None => Empty
+      }
+
+    }
+
+    internal
+  }
+
+  def fibsUsingUnfold() : Stream[Int] = {
+    def fibsInternal(x : (Int,Int)) : Option[(Int,(Int,Int))] = {
+      Some(x._1+x._2,(x._2,x._1+x._2))
+    }
+
+    unfold[Int,(Int,Int)](0,1)(fibsInternal)
+
+  }
+
+  def fromUsingUnfold(n : Int) : Stream[Int] = {
+    def internal(n : Int) : Option[(Int,Int)] = {
+      Some(n+1,n+1)
+    }
+    unfold[Int,Int](n)(internal)
+  }
+
+  def constantUsingFold[A](n : A) : Stream[A] = {
+    def internal(n : A) : Option[(A,A)] = {
+      Some(n,n)
+    }
+    unfold[A,A](n)(internal)
+  }
+
+  def mapUsingFold[A](stream : Stream[A])(f : A => A) : Stream[A] = {
+    def internal(x : Stream[A]) : Option[(A,Stream[A])] = {
+      x match {
+        case Cons(y,z) => Some(f(y()),z())
+        case Empty => None
+      }
+    }
+    unfold[A,Stream[A]](stream)(internal)
+  }
+
+  def takeUsingFold[A](stream : Stream[A],n : Int) : Stream[A] = {
+
+    def internal(x : Stream[A]) : Option[(A,Stream[A])] = {
+      x match {
+        case Cons(y,z) => {
+          if (n > 0) {
+            Some(y(),takeUsingFold(z(),n-1))
+          }else {
+            None
+          }
+        }
+        case Empty => None
+      }
+    }
+    unfold[A,Stream[A]](stream)(internal)
+  }
+
+  def takeWhileUsingFold[A](stream : Stream[A])(predicate : A => Boolean) : Stream[A] = {
+
+    def internal(x : Stream[A]) : Option[(A,Stream[A])] = {
+      x match {
+        case Cons(y,z) => {
+          lazy val yVal = y()
+          if (predicate(yVal)) {
+            Some(yVal,takeWhileUsingFold(z())(predicate))
+          }else {
+            None
+          }
+        }
+        case Empty => None
+      }
+    }
+    unfold[A,Stream[A]](stream)(internal)
+  }
+
+  //Assume both are of same length
+  def zipWith[A,B,C](s1 : Stream[A],s2 : Stream[B])(f : (A,B) => C) : Stream[C] = {
+
+    def internal(x : Stream[A],y : Stream[B]) : Option[(C,Stream[C])] = {
+      x match {
+        case Cons(x1,x2) =>
+          y match {
+            case Cons(y1,y2) =>
+          }
+      }
+    }
+
+    unfold[C,Stream[C]]()
+  }
 //  def apply[A] (as : Stream[A])  : Stream[A]  = {
 //    as match {
 //      case Empty => Empty
@@ -221,13 +338,24 @@ object Chapter5 {
   def main(args : Array[String]) : Unit = {
     if2(true,() => println("a"),() => println("b"))
     maybeTwice(true,{println("exc "); 1+1 })
-    val emptyLst = StreamUtil.empty
-    val l = StreamUtil.cons(() => 1,() => emptyLst)
-    val l1 = StreamUtil.cons(() => 2, () => l)
-    val l2 = StreamUtil.cons(() => 3, () => l1)
-    //println(l2.headOptionUsingFoldRight())
+    val emptyLst = Stream.empty
+    val l = Stream.cons(1,emptyLst)
+    val l1 = Stream.cons(2,  l)
+    val l2 = Stream.cons(3, l1)
+    println(l2.headOptionUsingFoldRight())
     println(l2.map[Int](x => 2*x).headOptionUsingFoldRight())
-    println(l2.flatMap(x => StreamUtil.cons(() => 3*x,() => emptyLst)).headOptionUsingFoldRight())
-    println(l2.flatMap(x => StreamUtil.cons(() => 3*x,() => emptyLst)).append(l2).toList)
+    println(l2.flatMap(x => Stream.cons(3*x,emptyLst)).headOptionUsingFoldRight())
+    println(l2.flatMap(x => Stream.cons(3*x,emptyLst)).append(l2).toList)
+    lazy val ones : Stream[Int] = Stream.cons(1,ones : Stream[Int])
+    println(ones.take(3).toList)
+    println(Stream.constant(10).take(10).toList)
+    println(Stream.from(10).take(10).toList)
+    println("test")
+    println("tyest" + Stream.constantUsingFold(20).take(10).toList)
+    println(Stream.mapUsingFold(l2)(3*_).take(4).toList)
+    println(Stream.takeWhileUsingFold(l2)(_ > 1).toList)
+//    val infinite : Stream[Int] = Stream.cons(1, infinite : Stream[Int])
+//    //println(ones.take(3).toList)
+//    //println(ones.takeWhile(_ == 1))
   }
 }
