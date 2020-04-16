@@ -1,5 +1,6 @@
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
+import scala.util.Sorting
 import util.control.Breaks._
 
 object Solution {
@@ -8,7 +9,13 @@ object Solution {
     intervals.length match {
       case 0 => 0
       case _ => {
-        val sortedIntervals = intervals.sortWith(_(0) < _(0))
+        //val sortedIntervals = intervals.sortWith(_(0) < _(0))
+        //val sortedIntervals = java.util.Arrays.sort(intervals)
+
+        Sorting.quickSort(intervals)(new Ordering[Array[Int]] {
+          override def compare(x: Array[Int], y: Array[Int]): Int = x(0) compareTo(y(0))
+        } )
+        val sortedIntervals = intervals
         //val sortedIntervals = intervals
 
 
