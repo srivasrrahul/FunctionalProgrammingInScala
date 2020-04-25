@@ -1,180 +1,237 @@
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 import util.control.Breaks._
+import scala.io.Source
 
-
-case class Edge(val source : Int,val dest : Int)
-class Graph(val _n : Int) {
-  val nodeCount = _n
-  val nodeEdges = new mutable.HashMap[Int,List[Edge]]()
-
-  for (j <- 0 to nodeCount-1) {
-    nodeEdges += ((j,List[Edge]()))
+case class Edge(val u : Int,val v : Int)
+class Graph(val vertexCount : Int) {
+  val nodeEdges = new Array[mutable.HashSet[Int]](vertexCount)
+  for (j <- 0 to vertexCount-1) {
+    nodeEdges(j) = new mutable.HashSet[Int]()
   }
 
-  def addEdge(edg: List[Int]) : Unit = {
-
-
-    nodeEdges.get(edg.head) match {
-      case Some(edgeLst : List[Edge]) => {
-        val edge = new Edge(edg.head,edg.tail.head)
-        nodeEdges += ((edg.head,edge::edgeLst))
-      }
-      case None => {
-
-      }
-    }
-
-    nodeEdges.get(edg.tail.head) match {
-      case Some(edgeLst : List[Edge]) => {
-        val edge = new Edge(edg.tail.head,edg.head)
-        nodeEdges += ((edg.tail.head,edge::edgeLst))
-      }
-      case None => {
-
-      }
-    }
+  def addEdge(u : Int,v : Int) : Unit = {
+    nodeEdges(u).add(v)
+    nodeEdges(v).add(u)
   }
 
-  def getCriticalEdges() : List[List[Int]] = {
+  def removeEdge(u : Int,v : Int) : Unit = {
+    nodeEdges(u).remove(v)
+    nodeEdges(v).remove(u)
+  }
 
-    val preTime = new mutable.HashMap[Int,Int]()
-    val postTime = new mutable.HashMap[Int,Int]()
+  def getEdges(u : Int) : Set[Int] = {
+    nodeEdges(u).toSet
+  }
+
+
+  def dfsPrePost() : Array[Set[Int]] = {
+    val visited = new mutable.HashSet[Int]()
+    val prePost = new Array[(Int,Int)](vertexCount)
+    for (j <- 0 to prePost.length-1) {
+      prePost(j) = (0,0)
+    }
+
+    val path = new Array[Int](vertexCount)
+    for (j <- 0 to path.length-1) {
+      path(j) = -1
+    }
 
     var time = 0
-    val visited = new mutable.HashSet[Int]()
-
     def incTime() : Int = {
-      time = time+1
+      time = time + 1
       time
     }
 
-    val path = new mutable.HashMap[Int,(Edge,Boolean)]() //node was visited by that edge
+    //val dualPaths = new ListBuffer[Set[Int]]()
 
+    val dualPathIds = new Array[Set[Int]](vertexCount)
+    for (j <- 0 to dualPathIds.length-1) {
+      dualPathIds(j) = Set[Int]()
+    }
 
-    def explore(currentVertex : Int) : Unit = {
-      visited.add(currentVertex)
-      preTime += ((currentVertex,incTime()))
+    var dualPathId = 1
 
-      //println("Exploring " + currentVertex)
-      nodeEdges.getOrElse(currentVertex,List[Edge]()).foreach(edge => {
-        //println("Next edge : " + edge)
-        val currentDest = edge.dest
+    def getNewDualPathId() : Int = {
+      dualPathId = dualPathId + 1
+      dualPathId
+    }
 
-        if (visited.contains(currentDest) == false) {
-          //println("Not visited hence adding" + currentDest)
-          path += ((currentDest,(edge,true)))
-          explore(currentDest)
+    def isStronglyConnected(source : Int,dest : Int) : Option[Int] = {
+      val intersection = dualPathIds(source).intersect(dualPathIds(dest))
+      if (intersection.isEmpty) {
+        None
+      }else {
+        Some(intersection.head)
+      }
+    }
+
+    def explore(current : Int) : Unit = {
+      visited.add(current)
+
+      prePost(current) = (incTime(),0)
+
+      for (dest <- getEdges(current)) {
+        //println("In edge " + current + " " + dest)
+        if (visited.contains(dest) == false) {
+          path(dest) = current
+          explore(dest)
         }else {
-          if (preTime.getOrElse(currentDest,0) > 0 && postTime.getOrElse(currentDest,0) == 0 && path.get(currentVertex).get._1.source != currentDest) {
-            //In dest cycle
-            //println("In dest cycle " + currentDest)
+          val destPreValue = prePost(dest)._1
+          val destPrePostValue = prePost(dest)._2
+
+          if (destPreValue != 0 && destPrePostValue == 0 && path(current) != dest) {
+            //println("backedge " + current + " " + dest)
+            var parentCurrent = path(current)
+
+            var anyIdFound = false
+            var commonId = -1
             breakable {
-              var currentNode = currentVertex
-              while (true) {
-                path.get(currentNode) match {
-                  case Some((edge,isCriticalPath)) => {
-                    //println("Extracing old edge for marking it non critical " + edge)
-                    path += ((currentNode,(edge,false)))
-                    currentNode = edge.source
-                    if (currentNode == currentDest) {
-                      break()
-                    }
-                  }
-                  case None => {
+              while (parentCurrent != -1 && parentCurrent != dest) {
+
+                isStronglyConnected(dest, parentCurrent) match {
+                  case Some(existingGroup) => {
+                    anyIdFound = true
+                    commonId= existingGroup
                     break
                   }
+                  case _ => {
+
+                  }
                 }
+                parentCurrent = path(parentCurrent)
               }
             }
+
+            parentCurrent = path(current)
+
+            if (anyIdFound == true) {
+
+              dualPathIds(current) = dualPathIds(current).+(commonId)
+              while (parentCurrent != -1 && parentCurrent != dest) {
+
+                dualPathIds(parentCurrent) = dualPathIds(parentCurrent).+(commonId)
+                parentCurrent = path(parentCurrent)
+              }
+
+              dualPathIds(dest) = dualPathIds(dest).+(commonId)
+
+            }else {
+              //println("Here ")
+              val newId = getNewDualPathId()
+              dualPathIds(current) = dualPathIds(current).+(newId)
+              dualPathIds(dest) = dualPathIds(dest).+(newId)
+
+              //println("Id shared " + current + " " + dest + " pc = " +  parentCurrent + " path " + path.mkString(","))
+
+              while (parentCurrent != -1 && (parentCurrent != dest)) {
+
+                //println("Id shared parent " + parentCurrent )
+                dualPathIds(parentCurrent) = dualPathIds(parentCurrent).+(newId)
+                parentCurrent = path(parentCurrent)
+              }
+
+            }
+
           }
         }
+      }
 
-
-
-      })
-
-      postTime += ((currentVertex,incTime()))
-
+      val preTime = prePost(current)._1
+      prePost(current) = (preTime,incTime())
     }
 
-    nodeEdges.foreachEntry((vertex,_) => {
-      if (visited.contains(vertex) == false) {
-        explore(vertex)
-      }
-    })
-
-
-    val retValue = new ListBuffer[List[Int]]
-    for (p <- path) {
-      p match {
-        case (_,(edge,true)) => {
-          retValue.addOne(List(edge.source,edge.dest))
-        }
-        case _ => {
-
-        }
+    for (j <- 0 to vertexCount-1) {
+      if (visited.contains(j) == false) {
+        explore(j)
       }
     }
+    //println("Dual Paths" + dualPaths.mkString("\n"))
+    //println(dualPathIds.mkString("\n"))
+    dualPathIds
 
-
-//    val retValue = path.foldRight (new ListBuffer[List[Int]]) {
-//      (entry,z) => {
-//        entry match {
-//          case (_,(edge,true)) => {
-//            z.addOne(List(edge.source,edge.dest))
-//          }
-//          case _ => {
-//
-//          }
-//        }
-//
-//        z
-//      }
-//    }
-
-    retValue.toList
   }
 
-  def print() : Unit = {
-    nodeEdges.foreachEntry((vertex,lst : List[Edge]) => {
-      println("Vertex " + vertex + " edge " + lst.mkString(","))
-    })
-  }
+
 }
 object Solution {
-  def criticalConnections(n: Int, connections: List[List[Int]]): List[List[Int]] = {
+  def criticalConnections(n: Int, connections: List[List[Int]]) : List[List[Int]] = {
+
+
     val graph = new Graph(n)
-    connections.foreach(connection => {
-      graph.addEdge(connection)
-    })
+
+    for (edge <- connections) {
+     graph.addEdge(edge.head,edge.tail.head)
+    }
 
 
-    //graph.print()
-    graph.getCriticalEdges()
-  }
+    val groupsDB = graph.dfsPrePost()
 
-  def testCase1(): Unit = {
-    println(criticalConnections(4,List()))
-  }
+    val criticalLst = new ListBuffer[List[Int]]
 
-  def testCase2(): Unit = {
-    println(criticalConnections(4,List(List(0,1),List(1,2),List(2,0),List(1,3))))
-  }
+    for (edge <- connections) {
+      val source = edge.head
+      val dest  = edge.tail.head
 
-  def testCase3(): Unit = {
-    println(criticalConnections(6,List(List(0,1),List(1,2),List(2,0),List(1,3),List(3,4),List(4,5),List(5,3))))
-  }
+      if (groupsDB(source).intersect(groupsDB(dest)).isEmpty == true) {
+        criticalLst.addOne(edge)
+      }
+    }
 
-  def testCase4(): Unit = {
-    println(criticalConnections(6,List(List(0,1),List(1,2),List(2,0),List(3,4),List(4,5),List(5,3))))
-  }
-
-  def executeLargeInput(filePath : String) : Unit = {
+    criticalLst.toList
 
   }
+
   def main(args: Array[String]): Unit = {
-    testCase3()
 
+    //println(criticalConnections(4,List(List(0,1),List(1,2),List(2,0),List(1,3))))
+
+    val filename = "/Users/rasrivastava/FILES/1000.txt"
+    val itr = Source.fromFile(filename).getLines()
+    val vertextCount = itr.next().toInt
+    println(vertextCount)
+
+    val edgeStr = itr.next()
+
+//    val first = edgeStr(1)
+//    val last = edgeStr(edgeStr.length-2)
+
+    val graph = new Graph(vertextCount)
+
+    var first = 1
+    var j = first
+
+    val connections = new ListBuffer[List[Int]]
+    while (first < edgeStr.length) {
+      while (edgeStr(j) != ']') {
+        j = j + 1
+      }
+
+      val subStr = edgeStr.substring(first + 1, j)
+
+      val splitStr = subStr.split(",")
+      val sourceVertex = splitStr(0).toInt
+      val destVertex = splitStr(1).toInt
+
+      connections.addOne(List(sourceVertex,destVertex))
+
+      //println(splitStr.mkString(","))
+
+      first = j + 2
+      j = first
+
+
+      //println(subStr + " first " + sourceVertex +  " " + destVertex)
+    }
+
+    println(connections.length)
+    val retValue = criticalConnections(vertextCount,connections.toList)
+    println(retValue.length)
+    //println(criticalConnections(vertextCount,connections.toList))
+
+
+//    for (line <- Source.fromFile(filename).getLines()) {
+//      println(line)
+//    }
   }
 }
