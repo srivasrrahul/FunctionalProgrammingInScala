@@ -29,47 +29,52 @@ object Solution {
       var dequeuedLst = q.dequeueAll(_ => true)
 
       //trip left and right nulls
-      val newLst = new scala.collection.mutable.ListBuffer[TreeNode]
+      //val newLst = new scala.collection.mutable.ListBuffer[TreeNode]
       var initEncountered = false
 
       for (element <- dequeuedLst) {
         if (element != null) {
           if (element.left != null) {
-            newLst.append(element.left)
+            //newLst.append(element.left)
+            q.append(element.left)
             initEncountered = true
           }else {
             if (initEncountered == true) {
-              newLst.append(element.left)
+              //newLst.append(element.left)
+              q.append(element.left)
             }
           }
 
           if (element.right != null) {
-            newLst.append(element.right)
+            //newLst.append(element.right)
+            q.append(element.right)
             initEncountered = true
           }else {
             if (initEncountered == true) {
-              newLst.append(element.right)
+              //newLst.append(element.right)
+              q.append(element.right)
             }
           }
         }else {
           if (initEncountered == true) {
-            newLst.append(null)
-            newLst.append(null)
+            //newLst.append(null)
+            //newLst.append(null)
+            q.append(null)
+            q.append(null)
           }
         }
       }
 
       //trim from right
-      var reverseLst = newLst.reverse
-      while (reverseLst.size > 0 && reverseLst.head == null) {
-        reverseLst = reverseLst.tail
+      while (q.isEmpty == false && q.last == null) {
+        q.dropRightInPlace(1)
       }
 
-      if (reverseLst.size > maxWidth) {
-        maxWidth = reverseLst.size
+      if (q.size > maxWidth) {
+        maxWidth = q.size
       }
 
-      q.addAll(reverseLst.reverse)
+
 
     }
 
