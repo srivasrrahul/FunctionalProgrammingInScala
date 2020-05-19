@@ -86,10 +86,10 @@ object Solution {
       val N = obstacleGrid(0).length-1
       val matrix = Array.ofDim[Int](M+1,N+1)
 
-      if (obstacleGrid(M)(N) == 1) {
+      if (obstacleGrid(0)(0) == 1) {
         0
       }else {
-        matrix(M)(N) = 1
+        matrix(0)(0) = 1
 
         def validIndex(index : Index) : Boolean = {
           if (index.x >= 0 && index.y >= 0) {
@@ -99,26 +99,38 @@ object Solution {
           }
         }
 
-
-        def itr(current : Index) : Unit = {
-          val left = new Index(current.x-1, current.y)
-          val up = new Index(current.x,current.y-1)
-
-          if (validIndex(left)) {
-            matrix(left.x)(left.y) = matrix(left.x)(left.y) + 1
-            itr(left)
+        var pathPossible = true
+        for (j <- 0 to N if pathPossible == true) {
+          if (obstacleGrid(0)(j) == 1) {
+            pathPossible = false
+          }else {
+            matrix(0)(j) = 1
           }
-
-          if (validIndex(up)) {
-            matrix(up.x)(up.y) = matrix(up.x)(up.y) + 1
-            itr(up)
-          }
-
         }
 
-        itr(new Index(M,N))
+        pathPossible = true
+        for (j <- 0 to M if pathPossible == true) {
+          if (obstacleGrid(j)(0) == 1) {
+            pathPossible = false
+          }else {
+            matrix(j)(0) = 1
+          }
+        }
 
-        matrix(0)(0)
+        for (j <- 1 to M) {
+          //from this to rightSide
+          for (k <- 1 to N) {
+            if (obstacleGrid(j)(k) == 0) {
+              matrix(j)(k) = matrix(j-1)(k) + matrix(j)(k-1)
+            }
+          }
+        }
+
+//        for (j <- 0 to matrix.length-1) {
+//          println(matrix(j).mkString(","))
+//        }
+
+        matrix(M)(N)
 
 
       }
@@ -128,6 +140,7 @@ object Solution {
 
   def main(args: Array[String]): Unit = {
     val arr = Array(Array(0,0,0),Array(0,1,0),Array(0,0,0))
-    println(uniquePathsWithObstacles(arr))
+    //val arr = Array(Array(0),Array(0))
+    println(uniquePathsWithObstaclesDP(arr))
   }
 }
