@@ -2,58 +2,72 @@ import scala.collection.mutable
 
 object Solution {
   def maxDistToClosest(seats: Array[Int]): Int = {
-    val occupiedSeats = new mutable.TreeSet[Int]()
-    val unoccupiedSeats = new mutable.HashSet[Int]()
-    for (j <- 0 to seats.length-1) {
-      if (seats(j) == 1) {
-        occupiedSeats.add(j)
+
+    val leftOccupiedSeats = new Array[Int](seats.length)
+
+    var leftEmptyLen = 0
+    for (j <- 0 to leftOccupiedSeats.length-1) {
+      if (seats(j) == 0) {
+        //its unoccupied
+        leftEmptyLen = leftEmptyLen + 1
+        leftOccupiedSeats(j) = leftEmptyLen
+
       }else {
-        unoccupiedSeats.add(j)
+        leftEmptyLen = 0
       }
     }
 
-    var maxDist : Option[Int] = None
-    for (unoccupiedSeatIndex <- unoccupiedSeats) {
-      //println("US " + unoccupiedSeatIndex)
-      val leftTree = occupiedSeats.rangeUntil(unoccupiedSeatIndex)
-      val righTree = occupiedSeats.rangeFrom(unoccupiedSeatIndex)
-
-      //println(leftTree)
-      //println(righTree)
-
-      var localMaxDist = Int.MaxValue
-      if (unoccupiedSeatIndex != 0) {
-        if (leftTree.isEmpty == false) {
-          val leftDistance = unoccupiedSeatIndex - leftTree.last
-          localMaxDist = leftDistance
-        }
-      }
-
-      if (unoccupiedSeatIndex != seats.length-1) {
-        if (righTree.isEmpty == false) {
-          val rightDistance = righTree.head - unoccupiedSeatIndex
-          if (rightDistance < localMaxDist) {
-            localMaxDist = rightDistance
-          }
-        }
-      }
-
-      maxDist match {
-        case None => maxDist = Some(localMaxDist)
-        case Some(earlierMaxDist) => {
-          if (localMaxDist > earlierMaxDist) {
-            maxDist = Some(localMaxDist)
-          }
-        }
+    val rightOccupiedSeats = new Array[Int](seats.length)
+    var rightEmptyLen = 0
+    for (j <- rightOccupiedSeats.length-1 to 0 by -1) {
+      if (seats(j) == 0) {
+        //its unoccupied
+        rightEmptyLen = rightEmptyLen + 1
+        rightOccupiedSeats(j) = rightEmptyLen
+      }else {
+        rightEmptyLen = 0
       }
     }
 
-    maxDist.get
+//    println(leftOccupiedSeats.mkString(","))
+//    println(rightOccupiedSeats.mkString(","))
+    //0,0,0,0
+    var maxDist = 0
+    val N = seats.length-1
+
+    for (j <- 0 to seats.length-1) {
+
+      if (seats(j) == 0) {
+        j match {
+          case 0 => {
+            val localMaxDist = rightOccupiedSeats(j)
+            if (localMaxDist > maxDist) {
+              maxDist = localMaxDist
+            }
+          }
+          case N => {
+            val localMaxDist = leftOccupiedSeats(j)
+            if (localMaxDist > maxDist) {
+              maxDist = localMaxDist
+            }
+          }
+          case _ => {
+            val localMaxDist = scala.math.min(leftOccupiedSeats(j),rightOccupiedSeats(j))
+            if (localMaxDist > maxDist) {
+              maxDist = localMaxDist
+            }
+          }
+        }
+
+      }
+    }
+
+    maxDist
 
 
   }
 
   def main(args: Array[String]): Unit = {
-    println(maxDistToClosest(Array(1,0,0,0)))
+    println(maxDistToClosest(Array(1,0,0,0,1,0,1)))
   }
 }
