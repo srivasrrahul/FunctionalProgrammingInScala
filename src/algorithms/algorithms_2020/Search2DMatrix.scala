@@ -7,54 +7,58 @@ object Solution {
     }else {
       val maxColSize = matrix(0).length - 1
 
-      def itr(minRowIndex: Int, maxRowIndex: Int): Boolean = {
-        //println("minRowIndex " + minRowIndex + " maxRowIndex " + maxRowIndex)
-        if (maxRowIndex < minRowIndex) {
+      def itr(minRowIndex : Int,maxRowIndex : Int,minColIndx : Int,maxColIndex : Int) : Boolean = {
+        println(minRowIndex + " " + maxRowIndex + " " + minColIndx + " " + maxColIndex)
+        if (minRowIndex > maxRowIndex || minColIndx > maxColIndex) {
           false
-        } else {
-          if (maxRowIndex == minRowIndex) {
-            //println(matrix(minRowIndex).mkString(","))
-            matrix(minRowIndex).search(target) match {
-              case Searching.Found(_) => {
-                true
-              }
-              case _ => {
-                false
-              }
-            }
+        }else {
+          if (minRowIndex == maxRowIndex && minColIndx == maxColIndex) {
+            matrix(minRowIndex)(minColIndx) == target
           } else {
+            val topRowRange = Range(matrix(minRowIndex)(minColIndx), matrix(minRowIndex)(maxColIndex) + 1)
+            val bottomRowRange = Range(matrix(maxRowIndex)(minColIndx), matrix(maxRowIndex)(maxColIndex) + 1)
 
-            val midRowIndex = minRowIndex + (maxRowIndex - minRowIndex) / 2
+            val leftColRange = Range(matrix(minRowIndex)(minColIndx), matrix(maxRowIndex)(minColIndx) + 1)
+            val rightColRange = Range(matrix(minRowIndex)(maxColIndex), matrix(maxRowIndex)(maxColIndex) + 1)
 
-            val leftRowRange = Range(matrix(minRowIndex)(0), matrix(midRowIndex)(maxColSize) + 1)
-
-            val rightRowRange = Range(matrix(midRowIndex + 1)(0), matrix(maxRowIndex)(maxColSize) + 1)
-
-            //println("Left Row Range " + leftRowRange)
-            //println("Right Row Range " + rightRowRange)
-            if (leftRowRange.contains(target)) {
-              itr(minRowIndex, midRowIndex)
-            } else {
-              if (rightRowRange.contains(target)) {
-                itr(midRowIndex + 1, maxRowIndex)
-              } else {
-                false
-              }
+            //Can eliminate topRow
+            var newMinRowIndex = minRowIndex
+            if (topRowRange.contains(target) == false) {
+              newMinRowIndex = minRowIndex + 1
             }
 
+            var newMaxRowIndex = maxRowIndex
+            if (bottomRowRange.contains(target) == false) {
+              newMaxRowIndex = maxRowIndex - 1
+            }
 
+            var newMinColIndex = minColIndx
+            if (leftColRange.contains(target) == false) {
+              newMinColIndex = newMinColIndex + 1
+            }
+
+            var newMaxColIndex = maxColIndex
+            if (rightColRange.contains(target) == false) {
+              newMaxColIndex = newMaxColIndex - 1
+            }
+
+            itr(newMinRowIndex, newMaxRowIndex, newMinColIndex, newMaxColIndex)
           }
         }
       }
 
-      itr(0,matrix.length-1)
+      itr(0,matrix.length-1,0,matrix(0).length-1)
     }
 
 
   }
 
   def main(args: Array[String]): Unit = {
-    val array = Array(Array(1,2,3),Array(4,5,6),Array(7,8,9))
-    println(searchMatrix(Array(Array(1,2,3)) ,1))
+    val array = Array(Array(1,4,7,11,15),
+                      Array(2,5,8,12,19),
+                      Array(3,6,9,16,22),
+                      Array(10,13,14,17,24),
+                      Array(18,21,23,26,30))
+    println(searchMatrix(array ,-1))
   }
 }
