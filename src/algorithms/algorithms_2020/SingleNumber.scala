@@ -1,19 +1,16 @@
 object Solution {
   def singleNumber(nums: Array[Int]): Int = {
-    val countInt = new scala.collection.mutable.HashMap[Int,Int]
+    var res = 0
     for (num <- nums) {
-      countInt.get(num) match {
-        case None => {
-          countInt += ((num,1))
-        }
-        case Some(alreadyExist) => {
-          countInt.remove(num)
-        }
-      }
+      res = res ^ num
     }
 
-    countInt.head._1
+    res
 
+  }
 
+  def main(args: Array[String]): Unit = {
+
+    println(singleNumber(Array(4,1,2,1,2)))
   }
 }
