@@ -4,6 +4,8 @@ object Solution {
       0
     }else {
       val matrix = Array.ofDim[Int](3, prices.length)
+      val maxProfitForSingleSell = new Array[Int](prices.length)
+
 
       //row 0 if I don't indulge in any transaction till date
       for (j <- 0 to matrix(0).length - 1) {
@@ -24,6 +26,11 @@ object Solution {
         }
 
         matrix(1)(j) = maxProfitToday
+        if (j == 1 ) {
+          maxProfitForSingleSell(1) = matrix(1)(j)
+        }else {
+          maxProfitForSingleSell(j) = scala.math.max(maxProfitForSingleSell(j-1),matrix(1)(j))
+        }
       }
 
       //row 2 if I engage in two transactions till date and sell last today
@@ -33,14 +40,15 @@ object Solution {
         var maxProfitForJ = Int.MinValue
         //println("In " + j)
         for (k <- j - 1 to 2 by -1) {
-          var maxProfitSingleSellForK = Int.MinValue
-          for (l <- 1 to k - 1) {
-            if (matrix(1)(l) > maxProfitSingleSellForK) {
-              maxProfitSingleSellForK = matrix(1)(l)
-            }
-          }
+//          var maxProfitSingleSellForK = Int.MinValue
+//          for (l <- 1 to k - 1) {
+//            if (matrix(1)(l) > maxProfitSingleSellForK) {
+//              maxProfitSingleSellForK = matrix(1)(l)
+//            }
+//          }
 
-          val currentProfit = maxProfitSingleSellForK + (current - prices(k)) //max prev to j + (current - buyatj)
+          //val currentProfit = maxProfitSingleSellForK + (current - prices(k)) //max prev to j + (current - buyatj)
+          val currentProfit = (current - prices(k)) + maxProfitForSingleSell(k-1)
           //println("For " + j + " " + currentProfit)
           if (currentProfit > maxProfitForJ) {
             maxProfitForJ = currentProfit
@@ -65,7 +73,7 @@ object Solution {
 
 
   def main(args: Array[String]): Unit = {
-    println(maxProfit(Array(7,6,4,3,1)))
+    println(maxProfit(Array(3,3,5,0,0,3,1,4)))
   }
 
 }
