@@ -10,17 +10,18 @@ object Solution {
         -1
       }
     }else {
-      val stationFuelIndex = new Array[List[(Int, Int)]](stations.length)
-
+      //val stationFuelIndex = new Array[List[(Int, Int)]](stations.length)
+      val stationFuelIndex = new Array[mutable.HashMap[Int,Int]](stations.length)
       //Each index indicates car stops at index with set of fuel options and number of stops
       //empty indicates no such option exists
       //initialize
       val fuelPending = startFuel - stations(0)(0)
       if (fuelPending >= 0) {
-        //val map = new mutable.TreeMap[Int, Int]()
-        stationFuelIndex(0) = List((1, fuelPending))
+        val map = new mutable.HashMap[Int, Int]()
+        map += ((1,fuelPending))
+        stationFuelIndex(0) = map
       } else {
-        stationFuelIndex(0) = List()
+        stationFuelIndex(0) = new mutable.HashMap[Int, Int]()
       }
 
       for (j <- 1 to stations.length - 1) {
@@ -51,24 +52,23 @@ object Solution {
         //base case for first stop
         val pendingFuel = startFuel - stations(j)(0)
         if (pendingFuel >= 0) {
-          if (lst.contains(1)) {
-            val oldPendingFuel = lst.get(1).get
-            if (pendingFuel > oldPendingFuel) {
-              lst += ((1, pendingFuel))
+          lst.get(1) match {
+            case None => lst += ((1, pendingFuel))
+            case Some(oldPendingFuel) => {
+              if (pendingFuel > oldPendingFuel) {
+                lst += ((1, pendingFuel))
+              }
             }
-          }else {
-            lst += ((1, pendingFuel))
           }
-
         }
 
 
         //println(lst)
 
-        stationFuelIndex(j) = lst.toList
+        stationFuelIndex(j) = lst
       }
 
-      println(stationFuelIndex.mkString("\n"))
+      //println(stationFuelIndex.mkString("\n"))
 
 
       var minCount = Int.MaxValue
