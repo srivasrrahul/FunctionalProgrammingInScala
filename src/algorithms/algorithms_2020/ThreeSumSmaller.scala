@@ -2,34 +2,53 @@ import scala.collection.mutable
 
 object Solution {
   def threeSumSmaller(nums: Array[Int], target: Int): Int = {
-    nums.sortInPlace()
+    if (nums.length < 3) {
+      0
+    }else {
+      nums.sortInPlace()
 
-    var count = 0
-    for (i <- 0 to nums.length-3) {
-      val localTarget = target - nums(i)
-      val numCount = new mutable.TreeMap[Int,Int]()
-      numCount += ((nums(i+1),1))
+      //-2,0,0,2,2
+      def twoSum(index: Int, sumPending: Int): Int = {
+        //Do it on order of n
+        //0,1,3    4
+        //0+3 < 4 implies 0+1 is also true
 
-      for (j <- i+2 to nums.length-1) {
-        val current = nums(j)
-        val pending = localTarget - current
-        val pendingTree = numCount.rangeUntil(pending)
-        if (pendingTree.isEmpty == false) {
-          for ((_,localCount) <- pendingTree) {
-            count = count + localCount
+        var current = index
+        var last = nums.length - 1
+
+        var count = 0
+        while (current < last) {
+          if (nums(current) + nums(last) >= sumPending) {
+            last = last - 1
+          } else {
+            count = count + (last-current)
+            current = current + 1
+
           }
         }
 
-        val defaultCount = numCount.getOrElseUpdate(current,0)
-        numCount += ((current,defaultCount+1))
+        count
       }
 
+      var result = 0
+      for (j <- 0 to nums.length - 3) {
+        val pendingSum = target - nums(j)
+        val countPending = twoSum(j + 1, pendingSum)
+        result = result + countPending
+      }
+
+//      if (nums(0) + nums(1) + nums(2) < target) {
+//        result = result + 1
+//      }
+
+      result
     }
 
-    count
+
   }
 
   def main(args: Array[String]): Unit = {
-    println(threeSumSmaller(Array(2,0,0,2,-2),2))
+    //println(threeSumSmaller(Array(-2,0,1,3),2))
+    println(threeSumSmaller(Array(-2,1,1),2))
   }
 }
