@@ -70,10 +70,7 @@ object Solution {
     val results = itr(0)
     val retValue = new ListBuffer[String]
     for (res <- results) {
-      val totalLength = res.foldLeft(0)((acc,newVal) => acc + newVal.length)
-      if (totalLength == s.length) {
-        retValue.append(res.mkString(" "))
-      }
+      retValue.append(res.mkString(" "))
 
     }
     //println(retValue)
