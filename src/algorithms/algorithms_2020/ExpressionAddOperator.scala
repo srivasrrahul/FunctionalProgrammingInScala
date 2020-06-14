@@ -176,7 +176,7 @@ object Solution {
     val findlLsts = exprLsts.filter(x => x._1 == target)
     val solution = new mutable.HashSet[String]()
     for (findLst <- findlLsts) {
-      if (solution.contains(findLst._2)) {
+      if (solution.contains(findLst._2) == false) {
         val tokens = tokenize(findLst._2)
         val parsedTokens = parseExpr(tokens, 0)
         val evaluatedValue = evalExpr(parsedTokens._1)
@@ -193,6 +193,6 @@ object Solution {
   }
 
   def main(args: Array[String]): Unit = {
-    println(addOperators("3456237490",9191))
+    println(addOperators("123",6))
   }
 }
