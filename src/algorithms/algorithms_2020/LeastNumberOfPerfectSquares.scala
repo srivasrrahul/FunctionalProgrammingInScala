@@ -9,51 +9,55 @@ object Solution {
       set.add(j*j)
     }
 
-    //println(set)
-    val memoizeMap = new mutable.HashMap[Int,Option[Int]]()
-    def itr(current : Int) : Option[Int] = {
-      //println(current)
-      val smallest = set.head
-      if (current < smallest) {
-        None
-      } else {
-        if (set.contains(current)) {
-          Some(1)
-        } else {
-          if (memoizeMap.contains(current)) {
-            memoizeMap.get(current).get
-          } else {
-            val setRange = set.rangeUntil(current)
-            var retValue: Option[Int] = None
-            for (r <- setRange) {
-              val diff = current - r
-              val pending = itr(diff)
-              pending match {
-                case Some(value) => {
-                  val count = 1 + value
-                  retValue match {
-                    case None => {
-                      retValue = Some(count)
-                    }
-                    case Some(oldCount) => {
-                      if (count < oldCount) {
-                        retValue = Some(count)
+    val map = new mutable.HashMap[Int,Option[Int]]()
+    for (j <- 1 to sqrt) {
+      map += (((j*j),Some(1)))
+    }
+
+
+    for (j <- 1 to n) {
+      map.get(j) match {
+        case None => {
+          val range = set.rangeUntil(j)
+          var minCount : Option[Int] = None
+
+          for (k <- range) {
+            val diff = j - k
+            map.get(diff) match {
+              case None => {}
+              case Some(count) => {
+                count match {
+                  case None => {}
+                  case Some(valCount) => {
+                    val newCount = 1 + valCount
+                    minCount match {
+                      case None => {
+                        minCount = Some(newCount)
+                      }
+                      case Some(oldCount) => {
+                        if (newCount < oldCount) {
+                          minCount = Some(newCount)
+                        }
                       }
                     }
                   }
                 }
-                case None => {}
               }
             }
-
-            memoizeMap += ((current, retValue))
-            retValue
           }
+
+          map += ((j,minCount))
+        }
+        case Some(lst) => {
+
         }
       }
     }
 
-    itr(n).get
+    //println(set)
+    //println(map)
+    map.get(n).get.get
+
 
   }
 
