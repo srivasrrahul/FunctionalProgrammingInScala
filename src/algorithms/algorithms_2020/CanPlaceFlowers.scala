@@ -2,70 +2,47 @@ import scala.collection.mutable
 
 object Solution {
   def canPlaceFlowers(flowerbed: Array[Int], n: Int): Boolean = {
-    def canPlantFlower(index : Int,addedSet : Set[Int]) : Boolean = {
-      //specical for 0 an last
-      val N = flowerbed.length-1
-      index match {
-        case 0 => {
-          if (flowerbed(1) == 0 && addedSet.contains(1) == false) {
-            true
-          }else {
-            false
-          }
-        }
-        case N => {
-          if (flowerbed(N-1) == 0 && addedSet.contains(N-1) == false) {
-            true
-          }else {
-            false
-          }
-        }
-        case _ => {
-          (flowerbed(index-1) == 0 && flowerbed(index+1) == 0 && addedSet.contains(index-1) == false && addedSet.contains(index+1) == false)
-        }
+    if (flowerbed.length == 1) {
+      if (n == 0) {
+        true
+      }else {
+        flowerbed.head == 0
       }
-    }
-    def itr(pendingFlowers : Int, addedSet : Set[Int],pendingPlaces : Set[Int]) : Boolean = {
-      pendingFlowers match {
-        case 0 => true
-        case _ => {
-          var retValue = false
-          for (pendingPlace <- pendingPlaces if retValue == false) {
-            if (canPlantFlower(pendingPlace,addedSet)) {
-              if (itr(pendingFlowers-1,addedSet.+(pendingPlace),pendingPlaces.-(pendingPlace))) {
-                retValue = true
+    }else {
+      var pending = n
+      for (j <- 0 to flowerbed.length - 1 if pending > 0) {
+        if (flowerbed(j) == 0) {
+          if (j == 0) {
+            if (flowerbed(1) == 0) {
+              flowerbed(0) = 1
+              pending = pending - 1
+            }
+          }else {
+            if (j == flowerbed.length - 1) {
+              if (flowerbed(flowerbed.length-2) == 0) {
+                flowerbed(flowerbed.length - 1) = 1
+                pending = pending - 1
+              }
+            } else {
+              if (flowerbed(j - 1) == 0 && flowerbed(j + 1) == 0) {
+                //println(j)
+                pending = pending - 1
+                flowerbed(j) = 1
               }
             }
           }
-
-          retValue
         }
       }
+
+
+
+      //println(pending)
+      pending == 0
     }
 
-    val pendingSet = new mutable.HashSet[Int]()
-    for (j <- 0 to flowerbed.length-1) {
-      if (flowerbed(j) == 0) {
-        pendingSet.add(j)
-      }
-    }
-
-    if (flowerbed.length==1) {
-      if (n == 1) {
-        flowerbed(0) == 0
-      }else {
-        if (n == 0) {
-          true
-        }else {
-          false
-        }
-      }
-    }else {
-      itr(n, Set(), pendingSet.toSet)
-    }
   }
 
   def main(args: Array[String]): Unit = {
-    println(canPlaceFlowers(Array(1,0,0,0,1),2))
+    println(canPlaceFlowers(Array(1,0,1,0,1,0,1),1))
   }
 }
