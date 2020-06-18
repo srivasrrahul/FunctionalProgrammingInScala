@@ -1,6 +1,8 @@
 import scala.collection.mutable
+import scala.util.control.Breaks._
 
 object Solution {
+
   def isUgly(num: Int): Boolean = {
     if (num == 1) {
       true
@@ -8,43 +10,30 @@ object Solution {
       if (num <= 0) {
         false
       }else {
-        val bitSet = new mutable.BitSet()
-        for (j <- 2 to num) {
-          bitSet.add(j)
-        }
-
-        val sqrt = math.sqrt(num).toInt
-
-        for (i <- 2 to sqrt) {
-          if (bitSet.contains(i)) {
-            var sq = i * i
-            var k = 0
-            while ((sq + k * i) <= num) {
-              bitSet.remove(sq + k * i)
-              k = k + 1
-            }
-          }
-        }
-
-        //println(bitSet)
         val uglySet = Set(2, 3, 5)
-        var ugly = true
-        val primeDivisors = new mutable.HashSet[Int]()
-        for (prime <- bitSet) {
-          if (num % prime == 0) {
-            //prime is a divisor
-            if (uglySet.contains(prime) == false) {
-              ugly = false
+        var x = num
+        breakable {
+          while (true) {
+            var divisible = false
+            for (s <- uglySet if divisible == false) {
+              if (x % s == 0) {
+                x = x / s
+                divisible = true
+              }
+            }
+
+            if (divisible == false) {
+              break
             }
           }
         }
 
-        ugly
+        x == 1
       }
     }
   }
 
   def main(args: Array[String]): Unit = {
-    println(isUgly(1641249143))
+    println(isUgly(15))
   }
 }
