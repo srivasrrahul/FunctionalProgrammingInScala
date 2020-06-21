@@ -1,54 +1,54 @@
 import scala.collection.mutable
-
+import scala.util.control.Breaks._
 object Solution {
   def sumSubarrayMins(A: Array[Int]): Int = {
+    val pq = mutable.PriorityQueue.empty[(Int,Int)](Ordering.by((_:(Int,Int))._1).reverse)
 
-    val treeMap = new mutable.TreeMap[Int,mutable.TreeSet[Int]]()
     for (j <- 0 to A.length-1) {
-      val defaultSet = treeMap.getOrElseUpdate(A(j),new mutable.TreeSet[Int]())
-      defaultSet.add(j)
+      pq.addOne((A(j),j))
     }
 
-    //println(treeMap)
-    def getMin(j : Int,k : Int) : Int = {
-      val min = math.min(A(j),A(k))
-      //val max = math.max(A(k),A(j))
 
-      val range = treeMap.rangeUntil(min+1)
-      //println("For " + j + " " + k + " " + range)
-      var minValFound = min
-      var minFound = false
-      for ((minCurrent,minIndexes) <- range if minFound == false)  {
-        val indexRange = minIndexes.range(j,k+1)
-        //println("For " + j + " " + k + " " + range + " "  + indexRange)
-        if (indexRange.size > 0) {
-          if (minCurrent < minValFound) {
-            minValFound = minCurrent
-            minFound = true
-          }
-        }
-      }
 
-      minValFound
+    //println(pq)
 
-    }
+    var lastIndex = -1
     var sum = 0
-    val modVal = Math.pow(10,9).toInt + 7
-    for (j <- 0 to A.length-1) {
-      for (k <- j to A.length-1) {
-        var minArr = 0
-        if (j == k) {
-          minArr = A(j)
-        }else {
-          minArr = getMin(j,k)
-        }
+    val modValue = scala.math.pow(10,9).toInt + 7
+    val analyzedIndexes = new mutable.HashSet[Int]()
+    while (pq.isEmpty == false) {
 
-        println("From " + j + " " + k + " => "+  minArr)
-        sum = (sum + minArr) % modVal
+      val top = pq.dequeue()
+      //println(top)
+      val currentIndex = top._2
+      val topValue = top._1
+      breakable {
+        for (j <- top._2 to A.length - 1) {
+          if (analyzedIndexes.contains(j) == true) {
+            break()
+          }
+
+          breakable {
+            for (k <- top._2 to 0 by -1) {
+              if (analyzedIndexes.contains(k) == true) {
+                break
+              }
+              //println(j + " " + k + " " + top._1)
+              sum = (sum + top._1) % modValue
+            }
+          }
+          //move to right
+
+        }
       }
+
+      analyzedIndexes.add(top._2)
+
     }
 
     sum
+
+
   }
 
   def main(args: Array[String]): Unit = {
