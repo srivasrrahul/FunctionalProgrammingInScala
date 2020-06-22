@@ -8,12 +8,7 @@ object Solution {
       pq.addOne((A(j),j))
     }
 
-
-
-    //println(pq)
-
-    var lastIndex = -1
-    var sum = 0
+    var sum : Long = 0L
     val modValue = scala.math.pow(10,9).toInt + 7
     val analyzedIndexes = new mutable.HashSet[Int]()
     while (pq.isEmpty == false) {
@@ -34,7 +29,7 @@ object Solution {
                 break
               }
               //println(j + " " + k + " " + top._1)
-              sum = (sum + top._1) % modValue
+              sum = sum + top._1
             }
           }
           //move to right
@@ -46,7 +41,7 @@ object Solution {
 
     }
 
-    sum
+    (sum % modValue).toInt
 
 
   }
