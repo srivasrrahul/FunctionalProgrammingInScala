@@ -1,58 +1,44 @@
 import scala.collection.mutable
 
 case class Index(val rowId : Int,val pos : Int)
+
 object Solution {
   def minimumTotal(triangle: List[List[Int]]): Int = {
-    val cache = new mutable.HashMap[Index,Set[Int]]()
-    def pathSum(prevPos : Int, lst : List[List[Int]],rowId : Int) : Set[Int] = {
-      lst match {
-        case (x::Nil) => {
-          if (prevPos +1 < x.length) {
-            Set(x(prevPos),x(prevPos+1))
-          }else {
-            Set(x(prevPos))
-          }
-        }
-        case (head::xs) => {
-          //println(prevPos)
-          val index = new Index(rowId,prevPos)
-          cache.get(index) match {
-            case None => {
-              val a = head(prevPos)
-              val sumLsts1 = pathSum(prevPos, xs,rowId+1)
+    val rev = triangle.reverse
+    val map = new mutable.HashMap[Index,Int]()
+    val head = rev.head
+    var j = 0
+    var rowId = 0
+    head.map(x => {
+      val index = new Index(rowId,j)
+      map += ((index,x))
+      j = j + 1
+    })
 
-              if (prevPos + 1 < head.length) {
-                val b = head(prevPos + 1)
-                val sumLsts2 = pathSum(prevPos + 1, xs,rowId+1)
+    rowId = rowId+1
 
-                val updatedLst1 = sumLsts1.map(x => a + x)
-                val updatedLst2 = sumLsts2.map(x => b + x)
-                val retValue = updatedLst1.union(updatedLst2)
-                cache += ((index,retValue))
-                retValue
+    var itr = rev.tail
+    while (itr != Nil) {
+      //println(itr.head)
+      val localHead = itr.head
+      j = 0
+      localHead.map(x => {
+        val index = new Index(rowId,j)
+        //println(index)
+        val option1Index = new Index(rowId-1,j)
+        val option2Index = new Index(rowId-1,j+1)
+        val s1 = x + map.get(option1Index).get
+        val s2 = x + map.get(option2Index).get
+        map += ((index,math.min(s1,s2)))
+        j = j + 1
+      })
 
-              } else {
-                val retValue = sumLsts1.map(x => a + x)
-                cache += ((index,retValue))
-                retValue
-              }
-            }
-            case Some(existsingVal) => {
-              existsingVal
-            }
-          }
-
-        }
-        case _ => {
-          Set()
-        }
-      }
+      itr = itr.tail
+      rowId = rowId+1
     }
 
+    map.get(new Index(triangle.length-1,0)).get
 
-    val s = pathSum(0,triangle,0)
-    //println(s)
-    s.min
   }
 
   def main(args: Array[String]): Unit = {
