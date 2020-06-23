@@ -22,16 +22,23 @@ object Solution {
       //println(itr.head)
       val localHead = itr.head
       j = 0
+      val toBeDiscarded = new mutable.HashSet[Index]()
       localHead.map(x => {
         val index = new Index(rowId,j)
         //println(index)
         val option1Index = new Index(rowId-1,j)
         val option2Index = new Index(rowId-1,j+1)
+        toBeDiscarded.add(option1Index)
+        toBeDiscarded.add(option2Index)
         val s1 = x + map.get(option1Index).get
         val s2 = x + map.get(option2Index).get
         map += ((index,math.min(s1,s2)))
         j = j + 1
       })
+
+      for (index <- toBeDiscarded) {
+        map.remove(index)
+      }
 
       itr = itr.tail
       rowId = rowId+1
