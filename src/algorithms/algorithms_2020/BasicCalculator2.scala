@@ -25,8 +25,8 @@ object Solution {
     def evalTerm(term : Term) : Int = {
       term match {
         case TermNumber(x) => x
-        case TermMul(x,y) => x * evalTerm(y)
-        case TermDiv(x,y) => x / evalTerm(y)
+        case TermMul(x,y) => evalTerm(y) * x
+        case TermDiv(x,y) => evalTerm(y) / x
       }
     }
     def evalExpr(expr : Expr) : Int = {
@@ -37,28 +37,44 @@ object Solution {
       }
     }
     def parseTerm(tokens: Array[Token],currentIndex : Int) : (Term,Int) = {
-      val headNumber = tokens(currentIndex).asInstanceOf[Number].x
+      //till what place * or div exists
+
+      val headTerm = new TermNumber(tokens(currentIndex).asInstanceOf[Number].x)
+      val prevTerm = new ListBuffer[Term] //only one element list
+
+      prevTerm.append(headTerm)
+
+      var parsedTill = currentIndex
       if (currentIndex + 1 < tokens.length) {
-        tokens(currentIndex+1) match {
-          case Multiply => {
-            val (nextTerm,parsedTill) = parseTerm(tokens,currentIndex+2)
-            val retTerm = new TermMul(headNumber,nextTerm)
-            (retTerm,parsedTill)
-          }
-          case Div => {
-            val (nextTerm,parsedTill) = parseTerm(tokens,currentIndex+2)
-            val retTerm = new TermDiv(headNumber,nextTerm)
-            (retTerm,parsedTill)
-          }
-          case _ => {
-            //Lets not parse other tokens here
-            (new TermNumber(headNumber),currentIndex)
+        var termPresent = true
+        for (j <- currentIndex+1 to tokens.length-1 by 2 if termPresent == true) {
+          tokens(j) match {
+            case Multiply => {
+              val oldTerm = prevTerm.head
+              prevTerm.clear()
+              val newTerm = new TermMul(tokens(j+1).asInstanceOf[Number].x,oldTerm)
+              prevTerm.append(newTerm)
+              parsedTill = j+1
+            }
+            case Div => {
+              val oldTerm = prevTerm.head
+              prevTerm.clear()
+              val newTerm = new TermDiv(tokens(j+1).asInstanceOf[Number].x,oldTerm)
+              prevTerm.append(newTerm)
+              parsedTill = j+1
+            }
+            case _ => {
+              termPresent = false
+            }
           }
         }
-      }else {
-        (new TermNumber(headNumber),currentIndex)
+
+
       }
+
+      (prevTerm.head,parsedTill)
     }
+
     def parseExpr(tokens : Array[Token],currentIndex : Int) : (Expr,Int) = {
       val (parsedTerm,parsedTill1) = parseTerm(tokens,currentIndex)
       //println(parsedTill1)
@@ -163,6 +179,6 @@ object Solution {
   }
 
   def main(args: Array[String]): Unit = {
-    println(calculate("14/3*2"))
+    println(calculate("3+2*2"))
   }
 }
