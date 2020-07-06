@@ -11,27 +11,26 @@ object Solution {
   def largestValues(root: TreeNode): List[Int] = {
     val retValue = new ListBuffer[Int]
 
-    val queue = new mutable.Queue[TreeNode]()
+    val queue = mutable.PriorityQueue.empty[TreeNode](Ordering.by((_ : TreeNode).value).reverse)
+
     if (root != null) {
-      queue.append(root)
+      queue.addOne(root)
     }
 
 
     while (queue.isEmpty == false) {
-      val allValues = queue.dequeueAll(_ => true)
-      val maxValue = allValues.max(new Ordering[TreeNode] {
-        override def compare(x: TreeNode, y: TreeNode): Int = {
-          x.value.compareTo(y.value)
-        }
-      })
+
+
+      val maxValue = queue.head
+      val allValues = queue.dequeueAll
       retValue.append(maxValue.value)
       for (value <- allValues) {
         if (value.left != null) {
-          queue.append(value.left)
+          queue.addOne(value.left)
         }
 
         if (value.right != null) {
-          queue.append(value.right)
+          queue.addOne(value.right)
         }
       }
 
