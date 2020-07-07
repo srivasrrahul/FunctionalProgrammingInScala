@@ -28,8 +28,16 @@ object Solution {
       val k = j+t-1
       //println(k + " " + j)
       var count = vowelsArr(k) - vowelsArr(j)
-      if (Set('a','e','i','o','i','u').contains(s(j))) {
-        count = count + 1
+//      if (Set('a','e','i','o','i','u').contains(s(j))) {
+//        count = count + 1
+//      }
+      s(j) match {
+        case 'a' | 'e' | 'i' | 'o' | 'u' => {
+          count = count  + 1
+        }
+        case _ => {
+
+        }
       }
       if (count > maxCount) {
         maxCount = count
