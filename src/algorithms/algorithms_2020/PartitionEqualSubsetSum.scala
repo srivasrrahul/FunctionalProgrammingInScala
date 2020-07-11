@@ -1,6 +1,6 @@
 import scala.collection.mutable
 
-case class Key(val index : Int,val s1 : Int,val s2 : Int)
+case class Key(val s1 : Int,val s2 : Int)
 object Solution {
   def canPartition(nums: Array[Int]): Boolean = {
     val cache = new mutable.HashMap[Key,Boolean]()
@@ -11,7 +11,7 @@ object Solution {
         set1 == set2
       }else {
         //two options
-        val key = new Key(index,set1,set2)
+        val key = new Key(set1,set2)
         if (cache.contains(key)) {
           //println("Cache hit")
           cache.get(key).get
