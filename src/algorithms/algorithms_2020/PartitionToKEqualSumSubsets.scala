@@ -2,23 +2,29 @@ import scala.collection.mutable
 
 object Solution {
   def canPartitionKSubsets(nums: Array[Int], k: Int): Boolean = {
-    val cache = new mutable.HashMap[Array[Int],Boolean]()
+    val cache = new mutable.HashMap[List[Int],Boolean]()
     def itr(currenIndex : Int,lst : Array[Int]): Boolean = {
       if (currenIndex == nums.length) {
         //println(lst.mkString(","))
         lst.toSet.size == 1
       }else {
-        var retValue = false
-        for (j <- 0 to k-1 if retValue == false) {
-          val newLst = lst.clone()
-          newLst(j) = newLst(j) + nums(currenIndex)
-          val localRetValue = itr(currenIndex+1,newLst)
-          if (localRetValue == true) {
-            retValue = true
+        val key = lst.toList
+        if (cache.contains(key)) {
+          cache.get(key).get
+        }else {
+          var retValue = false
+          for (j <- 0 to k - 1 if retValue == false) {
+            val newLst = lst.clone()
+            newLst(j) = newLst(j) + nums(currenIndex)
+            val localRetValue = itr(currenIndex + 1, newLst)
+            if (localRetValue == true) {
+              retValue = true
+            }
           }
-        }
 
-        retValue
+          cache += ((lst,retValue))
+          retValue
+        }
       }
     }
 
