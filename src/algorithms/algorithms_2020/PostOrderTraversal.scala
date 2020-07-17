@@ -18,6 +18,6 @@ object Solution {
       }
     }
 
-    postorderTraversal(root)
+    postOrder(root)
   }
 }
