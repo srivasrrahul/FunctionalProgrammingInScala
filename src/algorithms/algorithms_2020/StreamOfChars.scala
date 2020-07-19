@@ -58,47 +58,40 @@ class RootNode extends Node {
   def checkString(key : List[Char]) : Boolean = {
     var current : TrieNode = getChar(key.head)
     //println(current)
-    for (k <- key.tail if current != null) {
+    var retValue = false
+    if (current != null) {
+      retValue = current.getLeaf()
+    }
+    for (k <- key.tail if current != null && retValue == false) {
       //println("checking " + k)
       current = current.getChar(k)
+      if (current != null) {
+        retValue = current.getLeaf()
+      }
     }
 
-    if (current != null) {
-      //println(current.getLeaf())
-      current.getLeaf()
-    }else {
-      false
-    }
+    retValue
+//    if (current != null) {
+//      //println(current.getLeaf())
+//      current.getLeaf()
+//    }else {
+//      false
+//    }
   }
 }
 class StreamChecker(_words: Array[String]) {
   val root = new RootNode
   def formTrie() : Unit = {
     for (word <- _words) {
-      root.addString(word)
+      root.addString(word.reverse)
     }
   }
 
   formTrie()
-  val stack1 = new mutable.Stack[Char]()
+  var lst : List[Char] = List()
   def query(letter: Char): Boolean = {
-    stack1.push(letter)
-    var lst : List[Char] = List()
-
-    var retValue = false
-    while (stack1.isEmpty == false && retValue == false) {
-      lst = stack1.pop() :: lst
-      if (root.checkString(lst)) {
-        retValue = true
-      }
-    }
-
-    //push lst back
-    for (ch <- lst) {
-      stack1.push(ch)
-    }
-
-    retValue
+    lst = letter :: lst
+    root.checkString(lst)
   }
 
 }
