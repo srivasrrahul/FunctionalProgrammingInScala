@@ -159,12 +159,16 @@ object Solution {
             val lstBuffer = new ListBuffer[String]
             for (j <- index+1 to num.length-1) {
               val number = num.substring(index, j)
-              val nextLsts = generate(j)
-              for (nextLst <- nextLsts) {
-                lstBuffer.append(number + "+" + nextLst)
-                lstBuffer.append(number + "-" + nextLst)
-                lstBuffer.append(number + "*" + nextLst)
-                //lstBuffer.append(number + "/" + nextLst)
+              if (number.length > 1 && number.toInt == 0) {
+
+              }else {
+                val nextLsts = generate(j)
+                for (nextLst <- nextLsts) {
+                  lstBuffer.append(number + "+" + nextLst)
+                  lstBuffer.append(number + "-" + nextLst)
+                  lstBuffer.append(number + "*" + nextLst)
+                  //lstBuffer.append(number + "/" + nextLst)
+                }
               }
             }
 
@@ -189,12 +193,12 @@ object Solution {
         retValue.append(expr)
       }
     }
-    //println(exprLsts.mkString("\n"))
+    println(exprLsts.mkString("\n"))
     retValue.toList
   }
 
   def main(args: Array[String]): Unit = {
     //println(calculate("3456237490"))
-    println(addOperators("3456237490",9191))
+    println(addOperators("000",0))
   }
 }
