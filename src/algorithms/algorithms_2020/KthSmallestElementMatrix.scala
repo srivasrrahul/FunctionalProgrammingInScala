@@ -49,15 +49,23 @@ object Solution {
         val y = topCurrentTuple.y
 
         //Col till maxCol
-        for (j <- y+1 to maxCol) {
-          val newTuple = new Tuple(x,j)
-          pq.addOne((matrix(x)(j),newTuple))
+        if (y+1 <= maxCol) {
+          val newTuple = new Tuple(x,y+1)
+          pq.addOne((matrix(x)(y+1),newTuple))
         }
+//        for (j <- y+1 to maxCol) {
+//          val newTuple = new Tuple(x,j)
+//
+//        }
 
-        for (j <- x+1 to maxRow) {
-          val newTuple = new Tuple(j,y)
-          pq.addOne((matrix(j)(y),newTuple))
+        if (x+1 <= maxRow) {
+          val newTuple = new Tuple(x+1,y)
+          pq.addOne((matrix(x+1)(y),newTuple))
         }
+//        for (j <- x+1 to maxRow) {
+//          val newTuple = new Tuple(j,y)
+//          pq.addOne((matrix(j)(y),newTuple))
+//        }
 
         itr(k-1)
       }
