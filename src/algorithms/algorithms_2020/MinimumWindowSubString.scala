@@ -19,7 +19,7 @@ object Solution {
       charCountMatrix(j) = newMap.+((s(j),defaultCount+1))
     }
 
-    def equal(sourceMap : mutable.HashMap[Char,Int]) : Boolean = {
+    def equal(sourceMap : Map[Char,Int]) : Boolean = {
       var notEqual = false
       for ((tCh,tCount) <- targetCharCount if notEqual == false) {
         if (sourceMap.contains(tCh)) {
@@ -38,11 +38,31 @@ object Solution {
     var minLength : Option[(Int,Int)] = None
     for (j <- 0 to s.length-1) {
       for (k <- j to s.length-1) {
-        val localCharCount = new mutable.HashMap[Char,Int]()
-        for (x <- j to k) {
-          val defaultCount = localCharCount.getOrElse(s(x),0)
-          localCharCount += ((s(x),defaultCount+1))
+
+        val localCharCountAtk = charCountMatrix(k)
+        var localCharCount : Map[Char,Int] = null
+        if (j == 0) {
+          localCharCount = localCharCountAtk
+        }else {
+          val localCharCountAtj = charCountMatrix(j-1)
+          localCharCount = localCharCountAtk
+          for ((pChar,pCount) <- localCharCountAtk) {
+            if (localCharCountAtj.contains(pChar)) {
+              val diffValue = pCount - localCharCountAtj.get(pChar).get
+              if (diffValue <= 0) {
+                localCharCount = localCharCount.-(pChar)
+              }else {
+                localCharCount = localCharCount.+((pChar,diffValue))
+              }
+
+            }
+          }
         }
+        //val localCharCount = new mutable.HashMap[Char,Int]()
+//        for (x <- j to k) {
+//          val defaultCount = localCharCount.getOrElse(s(x),0)
+//          localCharCount += ((s(x),defaultCount+1))
+//        }
 
         //println(localCharCount)
         if (equal(localCharCount)) {
