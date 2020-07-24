@@ -24,9 +24,9 @@ object Solution {
         var current = head
         var next = head.next
 
-        while (false == ((next == head) || (current.value <= insertVal && insertVal <= next.value) ||
-          (current.value > insertVal && insertVal < next.value && current.value > next.value) ||
-          (current.value <= insertVal && insertVal >= next.value && current.value >  next.value)
+        while (false == ((next == head) || (current.value <= insertVal && insertVal < next.value) ||
+          (current.value >= insertVal && insertVal < next.value && current.value > next.value) ||
+          (current.value <= insertVal && insertVal > next.value && current.value >  next.value)
           )) {
 
           current = current.next
