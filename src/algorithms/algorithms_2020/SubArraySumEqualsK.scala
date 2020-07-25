@@ -12,22 +12,13 @@ object Solution {
       //println(arr.mkString(",") + " " + totalSum)
       var totalCount = 0
       val sumMap = new mutable.HashMap[Int,Int]()
+      sumMap += ((0,1))
       for (j <- 0 to arr.length-1) {
         val pendingSum = arr(j) - totalSum
         //println("For j = " + j + " pendingSum = " + pendingSum + " " + sumMap)
 
-        if (pendingSum == 0) {
-          //Implies from 0ths index to current
-          //println("here")
-          totalCount = totalCount + 1
-          if (arr(j) == 0) {
-            val defaultCount = sumMap.getOrElse(pendingSum, 0)
-            totalCount = totalCount + defaultCount
-          }
-        }else {
-          val defaultCount = sumMap.getOrElse(pendingSum, 0)
-          totalCount = totalCount + defaultCount
-        }
+        val defaultCount = sumMap.getOrElse(pendingSum, 0)
+        totalCount = totalCount + defaultCount
 
         val defaultCurrentCount = sumMap.getOrElse(arr(j),0)
         sumMap += ((arr(j),defaultCurrentCount+1))
@@ -46,6 +37,6 @@ object Solution {
 
   def main(args: Array[String]): Unit = {
 
-    println(subarraySum(Array(0,0),0))
+    println(subarraySum(Array(0,0,0,0,0,0,0,0,0,0),0))
   }
 }
