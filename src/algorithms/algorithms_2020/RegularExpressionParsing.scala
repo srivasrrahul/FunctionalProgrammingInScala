@@ -129,11 +129,12 @@ object Solution {
     currentStates.addAll(initialEpsion)
     currentStates.add(startState)
 
-//    println("Begin")
-//    println(currentStates.mkString("\n"))
-//    println("End")
+    println("Begin")
+    println(currentStates.mkString("\n"))
+    println("End")
 
     for (ch <- s) {
+      //println("===========================")
       val nextStates = new mutable.HashSet[DirectedNode]()
 
       for (currentState <- currentStates) {
@@ -145,7 +146,7 @@ object Solution {
       val nextEpsilonStates = new mutable.HashSet[DirectedNode]()
       for (nextState <- nextStates) {
         //println("For  " + nextState + " next epsilon " + nextState.epslionTransition)
-        nextEpsilonStates.addAll(nextState.getNextEpsilon())
+        nextEpsilonStates.addAll(graph.depthFirstSearch(nextState))
       }
 
 
@@ -153,6 +154,8 @@ object Solution {
       //println("For  " + ch + " next epsilor states " + nextEpsilonStates)
 
       nextEpsilonStates.addAll(nextStates)
+
+      //println("For  " + ch + " next cumulative state " + nextEpsilonStates)
 
       currentStates = nextEpsilonStates
     }
@@ -169,6 +172,6 @@ object Solution {
   }
 
   def main(args: Array[String]): Unit = {
-    println(isMatch("mississippi","mis*is*p*."))
+    println(isMatch("aaa","ab*ac*a"))
   }
 }
