@@ -3,22 +3,33 @@ import scala.collection.mutable.ListBuffer
 
 object Solution {
   def findSpecialInteger(arr: Array[Int]): Int = {
-    val countMap = new mutable.TreeMap[Int,mutable.HashSet[Int]]
-    val mapCount = new mutable.HashMap[Int,Int]()
-    for (j <- 0 to arr.length-1) {
-      val defaultCount = mapCount.getOrElse(arr(j),0)
-      mapCount += ((arr(j),defaultCount+1))
+    var count = 1
+    var special = arr(0)
+    var found = false
+    for (j <- 1 to arr.length-1 if found == false) {
+      if (arr(j) != arr(j-1)) {
+        val percentage = count.toFloat/arr.length.toFloat
+        //println("percentahe for " + arr(j-1) + " " + percentage)
 
-      val latestCount = defaultCount+1
+        if (percentage > 0.25) {
+          //println("Value " + (percentage-0.25))
+          special = arr(j-1)
+          found = true
+        }
 
-      val defaultSet = countMap.getOrElseUpdate(defaultCount,new mutable.HashSet[Int]())
-      defaultSet.remove(defaultCount)
+        count = 1
 
-      val latestSet = countMap.getOrElseUpdate(latestCount,new mutable.HashSet[Int]())
-      latestSet.add(arr(j))
+
+      }else {
+        count = count+1
+      }
 
     }
 
-    countMap.last._2.head
+    if (found == false) {
+      special = arr.last
+    }
+
+    special
   }
 }
