@@ -6,39 +6,25 @@ class ListNode(_x: Int = 0, _next: ListNode = null) {
 
 object Solution {
   def removeNthFromEnd(head: ListNode, n: Int): ListNode = {
-    var len = 0
-    var current = head
-    while (current != null) {
-      len = len + 1
-      current = current.next
+    //returns count from next
+    def itr(node : ListNode,prevCount : Int) : (Int,ListNode) = {
+      if (node == null) {
+        (prevCount,null)
+      }else {
+        val currentCount = prevCount+1
+        val (nextCount,nextValidNode) = itr(node.next,currentCount)
+        if (nextCount - prevCount == n) {
+          //delete me
+          (nextCount,nextValidNode) //currentNode is deleted
+
+        }else {
+          node.next = nextValidNode
+          (nextCount,node)
+        }
+      }
     }
 
-    val m = len - n
-    println(len + " " + m)
-
-    if (m == 0) {
-      head.next
-    }else {
-      //head wont change
-      current = head
-      var next = head.next
-      var j = 0
-      while (j < m-1) {
-        current = current.next
-        next = next.next
-        j = j + 1
-      }
-
-      //println(current.x)
-      if (next == null) {
-        current.next = null
-      }  else {
-        current.next = next.next
-      }
-
-
-      head
-    }
+    itr(head,0)._2
 
   }
 }
