@@ -28,6 +28,7 @@ class RandomizedCollection() {
   }
   /** Removes a value from the collection. Returns true if the collection contained the specified element. */
   def remove(v: Int): Boolean = {
+    //debug()
     if (presence.contains(v)) {
       val indexesSet = presence.get(v).get
       val index = indexesSet.head
@@ -35,15 +36,24 @@ class RandomizedCollection() {
       val lastValue = arrBuffer.last //last value
       arrBuffer(index) = arrBuffer.last //index got updated with last value
 
-      val defaultSet = presence.get(arrBuffer.last).get //last value's presence
-      defaultSet.remove(arrBuffer.length-1) //update last values presence with correct index
-      defaultSet.add(index)
+      if (v == arrBuffer.last) {
+        //There are at least two elements
+        indexesSet.remove(arrBuffer.length-1)
+        if (indexesSet.size == 0) {
+          presence.remove(v)
+        }
+      }else {
+        if (indexesSet.size == 1) {
+          presence.remove(v)
+        }else {
+          indexesSet.remove(index)
+        }
 
-      if (indexesSet.size == 1) {
-        presence.remove(v)
+        val lastSet = presence.get(arrBuffer.last).get
+        lastSet.add(index)
+        lastSet.remove(arrBuffer.length-1)
       }
 
-      presence += ((arrBuffer(index),defaultSet))
 
       arrBuffer.dropRightInPlace(1)
 
@@ -58,7 +68,7 @@ class RandomizedCollection() {
 
   /** Get a random element from the collection. */
   def getRandom(): Int = {
-    debug()
+    //debug()
     val r = Random.between(0,arrBuffer.length)
     arrBuffer(r)
   }
