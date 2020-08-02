@@ -33,23 +33,45 @@ class Graph(val arr : Array[Array[Int]]) {
     arr(source.x)(source.y)
   }
 }
+case class Key(val current : Tuple,visited : Set[Tuple])
 object Solution {
   def getMaximumGold(grid: Array[Array[Int]]): Int = {
     val graph = new Graph(grid)
+    val cache = new mutable.HashMap[Key,Int]()
     def dfs(source : Tuple) : Int = {
 
       var maxGoldPossible = Int.MinValue
-      def explore(source : Tuple,goldCollectedTillNow : Int,visited : Set[Tuple]) : Unit = {
+      def explore(source : Tuple,goldCollectedTillNow : Int,visited : Set[Tuple]) : Int = {
         val next = graph.next(source).toSet
         //println("For soruce " + source + " " + next + " " + visited)
         val diff = next.diff(visited)
         if (diff.isEmpty) {
-          if (goldCollectedTillNow+graph.getValue(source) > maxGoldPossible) {
-            maxGoldPossible = goldCollectedTillNow + graph.getValue(source)
+          val totalGold = goldCollectedTillNow+graph.getValue(source)
+          if (totalGold > maxGoldPossible) {
+            maxGoldPossible = totalGold
           }
+          totalGold
         }else {
-          for (validNext <- diff) {
-            explore(validNext,goldCollectedTillNow + graph.getValue(source),visited.+(source))
+          val key = new Key(source,visited)
+          if (cache.contains(key)) {
+            cache.get(key).get
+          }else {
+            var maxGoldFoundLocal = Int.MinValue
+            for (validNext <- diff) {
+              val goldFound = explore(validNext, goldCollectedTillNow + graph.getValue(source), visited.+(source))
+              if (goldFound > maxGoldFoundLocal) {
+                maxGoldFoundLocal = goldFound
+              }
+
+
+
+            }
+
+            if (maxGoldFoundLocal != Int.MinValue) {
+              cache += ((key,maxGoldFoundLocal))
+            }
+
+            maxGoldFoundLocal
           }
         }
       }
