@@ -1,4 +1,5 @@
 import scala.collection.mutable
+import scala.collection.mutable.ListBuffer
 
 class Graph(val n : Int) {
   val edges = new mutable.HashMap[Int,mutable.HashSet[Int]]()
@@ -18,11 +19,29 @@ class Graph(val n : Int) {
   def isEdge(source : Int,dest : Int) : Boolean = {
     edges.get(source).get.contains(dest)
   }
+
+  def findSources() : List[Int] = {
+    val sources = new mutable.HashSet[Int]()
+    for ((node,_) <- edges) {
+      sources.add(node)
+    }
+
+    for ((node,edges) <- edges) {
+      for (edge <- edges) {
+        sources.remove(edge)
+      }
+    }
+
+    sources.toList
+  }
+
+  def removeNode(source : Int) : Unit = {
+    edges.remove(source)
+  }
 }
 object Solution {
   def minimumSemesters(N: Int, relations: Array[Array[Int]]): Int = {
-    //check if its a dag
-    //if its a dig do topological sort
+    var semester = 0
     val graph = new Graph(N)
     for (relation <- relations) {
       graph.addEdge(relation)
@@ -42,6 +61,7 @@ object Solution {
 
     val visited = new mutable.HashSet[Int]()
     var cycleExists = false
+
     def explore(source : Int) : Unit = {
       visited.add(source)
       preTime(source) = getNewTime()
@@ -52,6 +72,8 @@ object Solution {
         }else {
           if (postTime(neigbour)._1 == 0) {
             cycleExists = true
+          }else {
+
           }
         }
       }
@@ -59,50 +81,35 @@ object Solution {
       postTime(source) = (getNewTime(),source)
     }
 
+    var groupId = N
     for (j <- 0 to N-1) {
       if (visited.contains(j) == false) {
         explore(j)
       }
+
     }
 
     if (cycleExists == false) {
-      postTime.sortInPlace()(new Ordering[(Int,Int)] {
-        override def compare(x: (Int, Int), y: (Int, Int)): Int = {
-          y._1.compareTo(x._1)
-        }
-      })
-
-      var semesters = 1
-      val currentSemesterCourses = new mutable.HashSet[Int]()
-      currentSemesterCourses.add(postTime(0)._2)
-
-      println(postTime.mkString(","))
-      for (j <- 1 to postTime.length-1) {
-        val (currentPostTime,courseId) = postTime(j)
-        var connectivity = false
-        for (currentSemesterCourse <- currentSemesterCourses if connectivity == false) {
-          if (graph.isEdge(currentSemesterCourse,courseId) == true) {
-            connectivity = true
+      var noSource = false
+      var semester = 0
+      while (noSource == false) {
+        val sources = graph.findSources()
+        if (sources.isEmpty == false) {
+          semester = semester + 1
+          for (source <- sources) {
+            graph.removeNode(source)
           }
-        }
-
-        if (connectivity == true) {
-          //can't add course in current semester
-          //new semester starts
-          currentSemesterCourses.clear()
-          currentSemesterCourses.add(courseId)
-          semesters = semesters + 1
         }else {
-          currentSemesterCourses.add(courseId) //we can add in current semester
+          noSource = true
         }
-
 
       }
 
-      semesters
+      semester
     }else {
       -1
     }
+
 
   }
 }
