@@ -6,39 +6,23 @@ object Solution {
       false
     }else {
       val maxColSize = matrix(0).length - 1
-
-      def itr(minRowIndex : Int,maxRowIndex : Int) : Boolean = {
-        if (minRowIndex > maxRowIndex) {
-          false
-        } else {
-          if (minRowIndex == maxRowIndex) {
-            matrix(minRowIndex).search(target) match {
-              case Searching.Found(_) => true
-              case _ => false
-            }
-          } else {
-            //Search in top
-            matrix(minRowIndex).search(target) match {
-              case Searching.Found(foundIndex) => true
-              case Searching.InsertionPoint(insertionPoint) => {
-
-                matrix(maxRowIndex).search(target) match {
-                  case Searching.Found(foundIndex) => {
-                    true
-                  }
-                  case Searching.InsertionPoint(lastInsertionPoint) => {
-                    itr(minRowIndex + 1, maxRowIndex - 1)
-                  }
-                }
-              }
-
-
-            }
+      var rowIndex = matrix.length-1
+      var colIndex = maxColSize
+      var found = false
+      while (rowIndex >= 0 && colIndex <= maxColSize && found == false) {
+        if (matrix(rowIndex)(0) > target) {
+          rowIndex = rowIndex-1
+        }else {
+          if (matrix(rowIndex)(0) < target) {
+            colIndex = colIndex+1
+          }else {
+            found = true
           }
         }
       }
 
-      itr(0,matrix.length-1)
+      found
+
     }
 
 
