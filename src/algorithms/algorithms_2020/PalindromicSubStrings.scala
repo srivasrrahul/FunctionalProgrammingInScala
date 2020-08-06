@@ -2,38 +2,48 @@ import scala.collection.mutable
 case class Tuple(val startIndex : Int,val endIndex : Int)
 object Solution {
   def countSubstrings(s: String): Int = {
-    val cache = new mutable.HashMap[Tuple,Boolean]()
-    def isPalindrom(j : Int,k : Int) : Boolean = {
-      if (j == k) {
-        true
+    val matrix = Array.ofDim[Boolean](s.length,s.length)
+    for (j <- 0 to s.length-1) {
+      matrix(j)(j) = true
+    }
+
+    var j = 0
+    var c = 1
+    var k = c
+
+    var countPalindromicSubString = s.length //single char
+    while (j < s.length && k < s.length) {
+      if (s(j) != s(k)) {
+        matrix(j)(k) = false
       }else {
-        val key = new Tuple(j,k)
-        if (cache.contains(key)) {
-          cache.get(key).get
+        if (j+1 == k) {
+          matrix(j)(k) = true
+          countPalindromicSubString = countPalindromicSubString + 1
         }else {
-          if (s(j) == s(k)) {
-            if (j + 1 < k) {
-              val retValue = isPalindrom(j + 1, k - 1)
-              cache += ((key,retValue))
-              retValue
-            } else {
-              true
-            }
-          } else {
-            false
+          matrix(j)(k) = matrix(j + 1)(k - 1)
+          if (matrix(j)(k) == true) {
+            countPalindromicSubString = countPalindromicSubString + 1
           }
+        }
+      }
+
+      j = j + 1
+      k = k + 1
+
+      if (k == s.length) {
+        c = c + 1
+        if (c >= s.length) {
+          //Do nothing
+        }else {
+          j = 0
+          k = c
         }
       }
     }
 
-    var countPalindromicSubString = 0
-    for (j <- 0 to s.length-1) {
-      for (k <- j to s.length-1) {
-        if (isPalindrom(j,k)) {
-          countPalindromicSubString = countPalindromicSubString + 1
-        }
-      }
-    }
+    // for (j <- 0 to s.length-1) {
+    //   println(matrix(j).mkString(","))
+    // }
 
     countPalindromicSubString
   }
