@@ -68,9 +68,8 @@ object Solution {
             val option1 = nums(currentIndex)*interimProduct*nums(earlierNegativeIndex)
             val option2 = nums(currentIndex)*interimProduct*nums(earlierNegativeIndex) * priorProductBeforeNegative
             val option3 = nums(currentIndex)
-            val option4 = nums(currentIndex) * interimProduct
-            val option5 = nums(currentIndex) * maxProductArr(currentIndex-1)
-            maxProductArr(currentIndex) = Array(option1,option2,option3,option4,option5).max
+            val option4 = nums(currentIndex) * maxProductArr(currentIndex-1)
+            maxProductArr(currentIndex) = Array(option1,option2,option3,option4).max
 
             if (nums(currentIndex) < 0) {
               Some(currentIndex)
