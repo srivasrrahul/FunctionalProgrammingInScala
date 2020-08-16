@@ -8,20 +8,20 @@ object Solution {
 
 
     var minPathLen = Int.MaxValue
-    def markLowest(newPath : List[Int]) : Unit = {
-      if (newPath.length < minPathLen) {
-        minPathLen = newPath.length
+    def markLowest(newPathLen : Int) : Unit = {
+      if (newPathLen < minPathLen) {
+        minPathLen = newPathLen
       }
     }
 
     def findAllPaths(source : Int) : Unit = {
 
 
-      def explore(current : Int,prevPath : List[Int],edgeVisited : Set[Edge]) : Unit = {
+      def explore(current : Int,prevPathLen : Int,edgeVisited : Set[Edge],nodesVisited : Set[Int]) : Unit = {
         //println("Explore " + current + " " + prevPath)
-        if (prevPath.toSet.size == graph.size) {
+        if (nodesVisited.size == graph.size) {
           //All nodes visited
-          markLowest(prevPath)
+          markLowest(prevPathLen)
         }else {
           //nodeVisited.add(current)
           for (neigbour <- graph(current)) {
@@ -30,13 +30,13 @@ object Solution {
             //explore(neigbour,current :: prevPath)
             if (edgeVisited.contains(edge) == false) {
               //println("Visit Neigbour " + neigbour + " " + current)
-              explore(neigbour,current :: prevPath,edgeVisited.+(edge))
+              explore(neigbour,prevPathLen+1,edgeVisited.+(edge),nodesVisited.+(current))
             }
           }
         }
       }
 
-      explore(source,List(),Set())
+      explore(source,0,Set(),Set())
       //println("For source " + source + " " + pathVisited.toList)
     }
 
