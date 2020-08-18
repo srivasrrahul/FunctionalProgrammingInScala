@@ -2,66 +2,89 @@ import scala.collection.mutable
 
 case class Index(val begin : Int,val end : Int,val pendingMailBox : Int)
 object Solution {
-  def minDistance(houses: Array[Int], k: Int): Int = {
+  def minDistance(houses: Array[Int], mbCount: Int): Int = {
     houses.sortInPlace()
-    val cache = new mutable.HashMap[Index,Int]()
-    def itr(begin : Int,end : Int,pendingMailBox : Int) : Int = {
-      val index = new Index(begin, end, pendingMailBox)
-      if (cache.contains(index)) {
-        cache.get(index).get
-      } else {
-        //println(begin + " " + end + " " + pendingMailBox)
-        if (pendingMailBox == 1) {
-          val count = (end-begin+1)
-          var midValue = 0
-          if (count % 2 == 0) {
-            val mid = begin + (end-begin)/2
-            val mid1 = mid+1
-            midValue = (houses(mid) + houses(mid+1))/2
+    val matrix = Array.ofDim[Int](houses.length,houses.length,mbCount+1)
+    for (j <- 0 to houses.length-1) {
+      for (k <- j to houses.length-1) {
+        for (p <- 1 to mbCount) {
+          val count = k-j+1
+          if (p >= count) {
+            matrix(j)(k)(p) = 0
           }else {
-            val mid = begin + (end-begin)/2
-            midValue = houses(mid)
-          }
-
-          var distance = 0
-          for (j <- begin to end) {
-            distance = distance + math.abs(houses(j)-midValue)
-          }
-
-          distance
-        } else {
-          //println("else " + begin + " " + end + " " + pendingMailBox)
-          val count = end - begin + 1
-          if (count <= pendingMailBox) {
-            0
-          } else {
-            var minSum = Int.MaxValue
-            for (j <- begin to end) {
-              for (p <- 1 to pendingMailBox - 1) {
-                val leftSum = itr(begin, j, p)
-                var rightSum = 0
-                if (j + 1 <= end) {
-                  rightSum = itr(j + 1, end, pendingMailBox - p)
+            if (count == 1) {
+              matrix(j)(k)(p) = 0
+            }else {
+              if (p == 1) {
+                var midValue = 0
+                if (count % 2 == 0) {
+                  val mid = j + (k - j) / 2
+                  val mid1 = mid + 1
+                  midValue = (houses(mid) + houses(mid + 1)) / 2
+                } else {
+                  val mid = j + (k - j) / 2
+                  midValue = houses(mid)
                 }
-                val totalSum = leftSum + rightSum
-                if (totalSum < minSum) {
-                  minSum = totalSum
+
+                var distance = 0
+                for (x <- j to k) {
+                  distance = distance + math.abs(houses(x) - midValue)
                 }
+
+                matrix(j)(k)(p) = distance
               }
-            }
 
-            //println("Result " + begin + " " + end + " " + pendingMailBox + " " + minSum)
-            cache += ((index, minSum))
-            minSum
+            }
           }
         }
       }
     }
 
-    itr(0,houses.length-1,k)
+    var j = 0
+    var current = 0
+    var k = current
+
+    while (j < houses.length && k < houses.length) {
+      for (p <- 1 to mbCount if (k-j+1 > 1 && p > 1)) {
+        var minSum = Int.MaxValue
+        for (x <- j to k) {
+          for (pending <- 1 to p-1) {
+            val leftSum = matrix(j)(x)(pending)
+            var rightSum = 0
+            if (x+1 <= k) {
+              rightSum = matrix(x+1)(k)(p-pending)
+            }
+
+            if ((leftSum+rightSum) < minSum) {
+              minSum = leftSum + rightSum
+            }
+          }
+        }
+
+        matrix(j)(k)(p) = minSum
+      }
+
+      j = j + 1
+      k = k + 1
+
+      if (k >= houses.length) {
+        current = current+1
+        j = 0
+        k = current
+      }
+    }
+
+
+//    for (j <- 0 to houses.length-1) {
+//      for (k <- j to houses.length-1) {
+//        println(j + "," + k + " " + matrix(j)(k).mkString(","))
+//      }
+//
+//    }
+    matrix(0)(houses.length-1)(mbCount)
   }
 
   def main(args: Array[String]): Unit = {
-    println(minDistance(Array(3,6,14,10),3))
+    println(minDistance(Array(2,5,7,10,14),2))
   }
 }
