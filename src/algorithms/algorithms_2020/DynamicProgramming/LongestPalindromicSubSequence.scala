@@ -41,6 +41,35 @@ object Solution {
 //        println(matrix(j).mkString(","))
 //      }
 
+      var j = x.length-1
+      var k = x.length-1
+
+      val lcsStr = new StringBuilder
+      while (j >= 0 && k >= 0) {
+        if (x(j) == y(k)) {
+          lcsStr.append(x(j))
+          j = j - 1
+          k = k -1
+        }else {
+          if (j > 0 && k > 0) {
+            val prev1 = matrix(j)(k-1)
+            val prev2 = matrix(j-1)(k)
+            if (prev1 > prev2) {
+              k = k -1
+            }else {
+              j = j - 1
+            }
+          }else {
+            if (j > 0) {
+              j = j-1
+            }else {
+              k = k-1
+            }
+          }
+        }
+      }
+
+      println(lcsStr.toString())
       matrix(x.length-1)(y.length-1)
     }
 
@@ -49,6 +78,6 @@ object Solution {
   }
 
   def main(args: Array[String]): Unit = {
-    println(longestPalindromeSubseq("bccb"))
+    println(longestPalindromeSubseq("bbbab"))
   }
 }
