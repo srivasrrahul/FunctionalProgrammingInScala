@@ -9,15 +9,12 @@ object Solution {
       cardPoints.sum
     }else {
       var sourceCount = 1 //destCount is 2
-      var sourceMatrix = Array.ofDim[Int](cardPoints.length,cardPoints.length)
-      var destMatrix = Array.ofDim[Int](cardPoints.length,cardPoints.length)
-      for (j <- 0 to cardPoints.length-1) {
-        sourceMatrix(j)(j) = cardPoints(j)
-      }
+      var sourceMatrix = new mutable.HashMap[Index,Int]()
+      var destMatrix = new mutable.HashMap[Index,Int]()
 
       for (j <- 0 to cardPoints.length-1) {
         for (k <- j to cardPoints.length-1) {
-          sourceMatrix(j)(k) = math.max(cardPoints(j),cardPoints(k))
+          sourceMatrix += ((new Index(j,k),math.max(cardPoints(j),cardPoints(k))))
         }
       }
 
@@ -32,7 +29,9 @@ object Solution {
         var k = current
 
         while (j < cardPoints.length && k < cardPoints.length) {
-          destMatrix(j)(k) = math.max(cardPoints(j) + sourceMatrix(j + 1)(k), cardPoints(k) + sourceMatrix(j)(k - 1))
+          val currentIndex = new Index(j,k)
+          destMatrix += ((currentIndex,math.max(cardPoints(j) + sourceMatrix.get(new Index(j + 1,k)).get,
+                        cardPoints(k) + sourceMatrix.get(new Index(j,k - 1)).get)))
 
           j = j + 1
           k = k + 1
@@ -64,7 +63,7 @@ object Solution {
 //        }
 //      }
 
-      destMatrix(0)(cardPoints.length-1)
+      sourceMatrix.get(new Index(0,cardPoints.length-1)).get
 
     }
 
