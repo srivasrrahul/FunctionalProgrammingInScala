@@ -4,60 +4,82 @@ import scala.collection.mutable
 
 object Solution {
   def minJumps(arr: Array[Int]): Int = {
-    val indexValues = new mutable.HashMap[Int,mutable.TreeSet[Int]]()
+    val indexValues = new mutable.HashMap[Int,mutable.HashSet[Int]]()
 
     for (j <- 0 to arr.length-1) {
       val currentValue = arr(j)
-      val defaultSet = indexValues.getOrElseUpdate(currentValue,new mutable.TreeSet[Int]())
+      val defaultSet = indexValues.getOrElseUpdate(currentValue,new mutable.HashSet[Int]())
       defaultSet.add(j)
     }
 
-    def itr(currentIndex : Int,visited : Set[Int]) : Option[Int] = {
-      if (currentIndex == arr.length-1) {
-        Some(0)
-      }else {
-        val next1 = currentIndex+1
-        val next2 = currentIndex-1
-        val allSets = indexValues.get(arr(currentIndex)).get
+    val queue = new mutable.Queue[(Int,Int)]()
+    val visitedLength = new mutable.HashMap[Int,Int]()
 
-        val pathLengths = new mutable.ArrayBuffer[Int]()
+    queue.addOne((0,0))
 
-        val newSet = visited.+(currentIndex)
-        if (next1 < arr.length && visited.contains(next1) == false) {
-          itr(next1,newSet) match {
-            case Some(c1) => pathLengths.append(c1)
-            case None => {}
+    val parent = new mutable.HashMap[Int,Int]()
+    var endFound = false
+    while (queue.isEmpty == false && endFound == false) {
+      val (top,distance) = queue.dequeue()
+      visitedLength += ((top,distance))
+
+      val nextDistance = 1+distance
+      if (top + 1 < arr.length) {
+
+        if (visitedLength.contains(top+1)) {
+          val lastDistance = visitedLength.get(top+1).get
+          if (nextDistance < lastDistance) {
+            visitedLength += ((top+1,nextDistance))
+            parent += ((top + 1, top))
+            queue.append((top + 1,nextDistance))
           }
-        }
-
-        if (next2 >= 0 && visited.contains(next2) == false) {
-          itr(next2,newSet) match {
-            case Some(c1) => pathLengths.append(c1)
-            case None => {}
-          }
-        }
-
-        for (sameValIndex <- allSets) {
-          if (visited.contains(sameValIndex) == false) {
-            itr(sameValIndex,newSet) match {
-              case Some(c1) => pathLengths.append(c1)
-              case None => {}
-            }
-          }
-        }
-
-        if (pathLengths.isEmpty) {
-          None
         }else {
-          Some(pathLengths.min)
+          visitedLength += ((top+1,nextDistance))
+          parent += ((top + 1, top))
+          queue.append((top + 1,nextDistance))
         }
+      }
 
+      if (top - 1 >= 0) {
+        if (visitedLength.contains(top-1)) {
+          val lastDistance = visitedLength.get(top-1).get
+          if (nextDistance < lastDistance) {
+            visitedLength += ((top-1,nextDistance))
+            parent += ((top -1, top))
+            queue.append((top -1,nextDistance))
+          }
+        }else {
+          visitedLength += ((top-1,nextDistance))
+          parent += ((top-1, top))
+          queue.append((top-1,nextDistance))
+        }
+      }
+
+      for (similarIndex <- indexValues.get(arr(top)).get) {
+        if (visitedLength.contains(similarIndex)) {
+          val existingDistance = visitedLength.get(similarIndex).get
+          if (nextDistance < existingDistance) {
+            visitedLength += ((similarIndex,nextDistance))
+            parent += ((similarIndex, top))
+            queue.append((similarIndex,nextDistance))
+          }
+        }else {
+          visitedLength += ((similarIndex,nextDistance))
+          parent += ((similarIndex, top))
+          queue.append((similarIndex,nextDistance))
+        }
       }
     }
 
-    itr(0,Set()) match {
-      case Some(c) => c
-      case _ => -1
+    println(parent)
+    var countParent = 0
+    var current = arr.length-1
+    while (parent.contains(current)) {
+      countParent = countParent+1
+      current = parent.get(current).get
     }
+
+    countParent
+
   }
 }
