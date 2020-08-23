@@ -1,42 +1,52 @@
+import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 
+case class Index(val currentIndex : Int,val groupPending : Int)
 object Solution {
   def largestSumOfAverages(A: Array[Int], K: Int): Double = {
-    def splitArrInGroups() : List[List[Int]] = {
+    def splitArrInGroups() : Set[List[Int]] = {
       if (K == 1) {
-        List(List(0))
+        Set(List(0))
       }else {
-        def itr(currentIndex : Int,groupPending : Int) : List[List[Int]] = {
+        val cache = new mutable.HashMap[Index,Set[List[Int]]]()
+        def itr(currentIndex : Int,groupPending : Int) : Set[List[Int]] = {
           if (currentIndex == A.length-1) {
-            val retValue = new ListBuffer[List[Int]]
+            val retValue = new mutable.HashSet[List[Int]]
             if (groupPending >= 1) {
-              retValue.append(List(currentIndex))
+              retValue.add(List(currentIndex))
 
             }else {
               //Not valid combination
             }
 
-            retValue.toList
+            retValue.toSet
           }else {
             if (groupPending == 0) {
-              List() //Not valud combination
+              Set() //Not valud combination
             }else {
-              val retValue = new ListBuffer[List[Int]]
-              val currentGroupStartsWith = List(currentIndex)
-              for (j <- currentIndex+1 to A.length-1) {
-                val currentGroupSize = j-currentIndex
-                val pendingElementSize = A.length-1-j
-                val next = itr(j,groupPending-1)
-                if (next.isEmpty == false) {
-                  for (nextLst <- next) {
-                    retValue.append(currentGroupStartsWith ++ nextLst)
+              val index = new Index(currentIndex,groupPending)
+              if (cache.contains(index)) {
+                cache.get(index).get
+              }else {
+                val retValue = new mutable.HashSet[List[Int]]
+                val currentGroupStartsWith = List(currentIndex)
+                for (j <- currentIndex + 1 to A.length - 1) {
+                  val currentGroupSize = j - currentIndex
+                  val pendingElementSize = A.length - 1 - j
+                  val next = itr(j, groupPending - 1)
+                  if (next.isEmpty == false) {
+                    for (nextLst <- next) {
+                      retValue.add(currentGroupStartsWith ++ nextLst)
+                    }
                   }
+                  retValue.add(currentGroupStartsWith)
+
                 }
-                retValue.append(currentGroupStartsWith)
 
+                val finalSet = retValue.toSet
+                cache += ((index,finalSet))
+                retValue.toSet
               }
-
-              retValue.toList
             }
           }
         }
