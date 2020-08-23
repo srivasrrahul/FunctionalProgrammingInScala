@@ -1,18 +1,67 @@
 import scala.collection.mutable
-import scala.collection.mutable.ListBuffer
 
 case class Index(val currentIndex : Int,val groupPending : Int)
 object Solution {
   def largestSumOfAverages(A: Array[Int], K: Int): Double = {
-    val matrix = Array.ofDim[List[List[Int]]](K+1,A.length) //average and length
+    def splitArrInGroups() : Set[List[Int]] = {
+      if (K == 1) {
+        Set(List(0))
+      }else {
+        val cache = new mutable.HashMap[Index,Set[List[Int]]]()
+        def itr(currentIndex : Int,groupPending : Int) : Set[List[Int]] = {
+          if (currentIndex == A.length-1) {
+            val retValue = new mutable.HashSet[List[Int]]
+            if (groupPending >= 1) {
+              retValue.add(List(currentIndex))
+
+            }else {
+              //Not valid combination
+            }
+
+            retValue.toSet
+          }else {
+            if (groupPending == 0) {
+              Set() //Not valud combination
+            }else {
+              val index = new Index(currentIndex,groupPending)
+              if (cache.contains(index)) {
+                cache.get(index).get
+              }else {
+                val retValue = new mutable.HashSet[List[Int]]
+                val currentGroupStartsWith = List(currentIndex)
+                for (j <- currentIndex + 1 to A.length - 1) {
+                  val currentGroupSize = j - currentIndex
+                  val pendingElementSize = A.length - 1 - j
+                  val next = itr(j, groupPending - 1)
+                  if (next.isEmpty == false) {
+                    for (nextLst <- next) {
+                      retValue.add(currentGroupStartsWith ++ nextLst)
+                    }
+                  }
+                  retValue.add(currentGroupStartsWith)
+
+                }
+
+                val finalSet = retValue.toSet
+                cache += ((index,finalSet))
+                retValue.toSet
+              }
+            }
+          }
+        }
+
+        itr(0,K)
+      }
+    }
+
+    val lst = splitArrInGroups()
     val sumArr = new Array[Int](A.length)
     sumArr(0) = A(0)
-
-    for (j <- 1 to A.length-1) {
+    for (j <- 1 to sumArr.length-1) {
       sumArr(j) = sumArr(j-1) + A(j)
     }
 
-    def findSum(i1 : Int,i2 : Int)  : Int = {
+    def findSum(i1 : Int,i2 : Int) : Int = {
       if (i1 == i2) {
         A(i1)
       }else {
@@ -24,29 +73,6 @@ object Solution {
         totalSum
       }
     }
-    for (k <- A.length-1 to 0 by -1) {
-      matrix(1)(k) = List(List(k))
-    }
-
-
-    for (j <- 2 to K) {
-      for (k <- A.length-j to 0 by -1) {
-        val retValue = new ListBuffer[List[Int]]
-        for (p <- A.length-j+1 to k+1 by -1) {
-          val lsts = matrix(j-1)(p)
-          for (lst <- lsts) {
-            retValue.append(k::lst)
-          }
-        }
-
-        matrix(j)(k) = retValue.toList
-      }
-    }
-
-//    for (j <- 1 to matrix.length-1) {
-//      println(matrix(j).mkString(","))
-//    }
-
     def findAverage(lst : List[Int]) : Double = {
       var groupAverageSum = 0.0
       var prev = lst.head
@@ -65,26 +91,17 @@ object Solution {
       groupAverageSum = groupAverageSum + average
       groupAverageSum
     }
+    var maxAvg = 0.0
+    for (group <- lst) {
 
-    var maxAverage = Double.MinValue
-
-    for (j <- 1 to K) {
-      val lsts = matrix(j)(0)
-      //println(lsts)
-      for (lst <- lsts) {
-
-        val average = findAverage(lst)
-        //println(lst + " " + average)
-        if (average > maxAverage) {
-          maxAverage = average
-        }
+      val groupAvg = findAverage(group)
+      println(group + " " + groupAvg)
+      if (groupAvg > maxAvg) {
+        maxAvg = groupAvg
       }
-
     }
-
-    maxAverage
-
-
+    //println(lst.mkString("\n"))
+    maxAvg
   }
 
   def main(args: Array[String]): Unit = {
