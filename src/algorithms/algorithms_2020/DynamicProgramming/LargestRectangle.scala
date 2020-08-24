@@ -58,6 +58,62 @@ object Solution {
       val maxCols = matrix(0).length - 1
 
       val cache = new mutable.HashMap[Rectangle, Rectangle]()
+      val colsIndex = new mutable.HashMap[Int,mutable.TreeSet[Int]]()
+      val rowsIndex = new mutable.HashMap[Int,mutable.TreeSet[Int]]()
+
+      for (j <- 0 to maxRows) {
+        for (k <- 0 to maxCols) {
+          if (matrix(j)(k) == '1') {
+            val defaultRowSet = rowsIndex.getOrElseUpdate(j,new mutable.TreeSet[Int]())
+            defaultRowSet.add(k)
+
+            val defaultColsSet = colsIndex.getOrElseUpdate(k,new mutable.TreeSet[Int]())
+            defaultColsSet.add(j)
+          }
+        }
+      }
+
+      //println(rowsIndex)
+      //println(colsIndex)
+      def allRowOnes(rowId: Int, result: Rectangle): Boolean = {
+        val rowSet = rowsIndex.getOrElse(rowId,new mutable.TreeSet[Int]())
+        //var mock = false
+        if (rowSet.range(result.colBegin,result.colEnd+1).size == result.colSize()) {
+          true
+        }else {
+          false
+        }
+//        var allRowOnes = true
+//        for (j <- result.colBegin to result.colEnd) {
+//          if (matrix(rowId)(j) != '1') {
+//            allRowOnes = false
+//          }
+//        }
+//
+//        if (mock != allRowOnes) {
+//          println(rowId + " " + result)
+//        }
+//        allRowOnes
+      }
+
+      def allColOnes(colId: Int, result: Rectangle): Boolean = {
+//        var allColOnes = true
+//        for (j <- result.rowBegin to result.rowEnd) {
+//          if (matrix(j)(colId) != '1') {
+//            allColOnes = false
+//          }
+//        }
+//
+//        allColOnes
+        val cols = colsIndex.getOrElse(colId,new mutable.TreeSet[Int]())
+        val colsSet = cols.range(result.rowBegin,result.rowEnd+1)
+        if (colsSet.size == result.rowSize()) {
+          true
+        }else {
+          false
+        }
+      }
+
 
       def itr(rectangle: Rectangle): Rectangle = {
         //println(rectangle)
@@ -69,27 +125,6 @@ object Solution {
           }
         } else {
 
-          def allRowOnes(rowId: Int, result: Rectangle): Boolean = {
-            var allRowOnes = true
-            for (j <- result.colBegin to result.colEnd) {
-              if (matrix(rowId)(j) != '1') {
-                allRowOnes = false
-              }
-            }
-
-            allRowOnes
-          }
-
-          def allColOnes(colId: Int, result: Rectangle): Boolean = {
-            var allColOnes = true
-            for (j <- result.rowBegin to result.rowEnd) {
-              if (matrix(j)(colId) != '1') {
-                allColOnes = false
-              }
-            }
-
-            allColOnes
-          }
 
 
           if (cache.contains(rectangle)) {
