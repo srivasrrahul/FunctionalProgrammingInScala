@@ -2,52 +2,53 @@ import scala.collection.mutable
 case class Index(val x : Int,val y : Int)
 object Solution {
   def numTrees(n: Int): Int = {
-    val cache = new mutable.HashMap[Index,Int]()
-    def itr(begin : Int,end : Int) : Int = {
-      if (begin == end) {
-        1
-      }else {
-        //println("Here")
-        val index = new Index(begin, end)
-        if (cache.contains(index)) {
-          cache.get(index).get
-        } else {
-          var total = 0
-          for (r <- begin to end) {
-            var leftSubTreeCount = 0
-            if (r > begin) {
-              leftSubTreeCount = itr(begin, r - 1)
-              //println("for " + begin + " " + (r-1) + leftSubTreeCount)
-            }
+    val matrix = Array.ofDim[Int](n+1,n+1)
+    for (j<-1 to matrix.length-1) {
+      matrix(j)(j) = 1
+    }
 
-            var rightSubTreeCount = 0
-            if (r + 1 <= end) {
-              rightSubTreeCount = itr(r + 1, end)
-              //println("for " + (r+1) + " " + end + rightSubTreeCount)
-            }
+    var j = 1
+    var current = 2
+    var k = current
 
-            //Combine each with left
-            var totalCount = 0
-            if (leftSubTreeCount == 0) {
-              totalCount = rightSubTreeCount
-            } else {
-              if (rightSubTreeCount == 0) {
-                totalCount = leftSubTreeCount
-              } else {
-                totalCount = leftSubTreeCount * rightSubTreeCount
-              }
-            }
+    while (j < matrix.length && k < matrix(0).length) {
+      var total = 0
+      for (r <- j to k) {
 
-            total = total + totalCount
-          }
-
-          cache += ((index,total))
-          total
+        var leftSubTreeCount = 0
+        if (r > j) {
+          leftSubTreeCount = matrix(j)(r-1)
         }
+
+        var rightSubTreeCount = 0
+        if (r+1 <= k) {
+          rightSubTreeCount = matrix(r+1)(k)
+        }
+
+        var currentTotal = 0
+        if (leftSubTreeCount == 0 || rightSubTreeCount == 0) {
+          currentTotal = math.max(leftSubTreeCount,rightSubTreeCount)
+        }else {
+          currentTotal = leftSubTreeCount * rightSubTreeCount
+        }
+
+        total = total + currentTotal
+
+      }
+
+      matrix(j)(k) = total
+
+      j = j + 1
+      k = k + 1
+
+      if (k >= matrix(0).length) {
+        current = current+1
+        j = 1
+        k = current
       }
     }
 
-    itr(1,n)
+    matrix(1).last
   }
 
   def main(args: Array[String]): Unit = {
