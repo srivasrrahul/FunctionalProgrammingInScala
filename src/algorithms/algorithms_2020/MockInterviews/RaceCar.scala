@@ -5,6 +5,9 @@ trait Msg
 case object MsgA extends Msg
 case object MsgR extends Msg
 
+object Store {
+  val map = new mutable.HashMap[Vector,Int]()
+}
 object MsgHandler {
   def handle(vector: Vector,msg : Msg) : Vector = {
     msg match {
@@ -68,13 +71,16 @@ object Solution {
     //Goal found with some path
     //Check whatever was pending in pq if that traverses to distance and found that
 
-    val pq1 = mutable.PriorityQueue.empty[(Vector, Int)](new Ordering[(Vector, Int)] {
-      override def compare(x: (Vector, Int), y: (Vector, Int)): Int = {
-        //get shortest distance
-        y._2.compareTo(x._2)
-      }
-    })
+    //BFS is good enough
 
+//    val pq1 = mutable.PriorityQueue.empty[(Vector, Int)](new Ordering[(Vector, Int)] {
+//      override def compare(x: (Vector, Int), y: (Vector, Int)): Int = {
+//        //get shortest distance
+//        y._2.compareTo(x._2)
+//      }
+//    })
+
+    val pq1 = new mutable.Queue[(Vector,Int)]()
 
     visited.clear()
     pq.clear()
