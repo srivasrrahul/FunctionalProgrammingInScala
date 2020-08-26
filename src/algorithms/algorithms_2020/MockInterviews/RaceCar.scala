@@ -75,6 +75,7 @@ object Solution {
       }
     })
 
+
     visited.clear()
     pq.clear()
     //Apply dijkstra
@@ -83,12 +84,21 @@ object Solution {
     val upperBound = foundTargetDistance
     foundTargetDistance = 0
     val distanceMap = new mutable.HashMap[Vector,Int]()
-    while (pq1.isEmpty == false) {
+    //println(upperBound)
+    var found = false
+    while (pq1.isEmpty == false && found == false) {
       val top = pq1.dequeue()
-
       val newDistance = top._2+1
+      if (top._1.position == target) {
+        //println("Hee " + top._2)
+        //distanceMap += ((top._1,newDistance))
+        found = true
+      }
 
-      if (newDistance > upperBound) {
+      //print(pq1.size + ",")
+
+
+      if (newDistance >= upperBound) {
         //forget it
       } else {
         val nextMsgA = MsgHandler.handle(top._1, MsgA)
@@ -96,13 +106,13 @@ object Solution {
         val existingDistanceA = distanceMap.getOrElse(nextMsgA,Int.MaxValue)
         if (newDistance < existingDistanceA) {
           distanceMap += ((nextMsgA,newDistance))
-          pq1.addOne((nextMsgA, top._2 + 1))
+          pq1.addOne((nextMsgA, newDistance))
         }
 
         val existingDistanceR = distanceMap.getOrElse(nextMsgR,Int.MaxValue)
         if (newDistance < existingDistanceR) {
           distanceMap += ((nextMsgR,newDistance))
-          pq1.addOne((nextMsgR, top._2 + 1))
+          pq1.addOne((nextMsgR, newDistance))
         }
 
       }
@@ -117,7 +127,7 @@ object Solution {
       }
     }
 
-    minDistance
+    math.min(minDistance,upperBound)
 
   }
 }
