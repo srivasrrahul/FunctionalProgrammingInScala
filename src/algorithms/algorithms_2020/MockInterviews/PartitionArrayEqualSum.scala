@@ -1,9 +1,12 @@
+import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 
+case class Index(val n : Int,val k : Int)
 object Solution {
   type DisjointSet = List[Int]
   type Partition = List[DisjointSet]
   def canPartitionKSubsets(nums: Array[Int], K: Int): Boolean = {
+    val cache = new mutable.HashMap[Index,List[Partition]]()
     def itr(n : Int,k : Int) : List[Partition] = {
       if (n == k) {
         //there are k disjoint sets of each of size 1 in 1 partition
@@ -21,25 +24,32 @@ object Solution {
           val partition = List(disjointSet)
           List(partition)
         }else {
-          val retValue = new ListBuffer[Partition]
-          val partitions1 = itr(n-1,k-1)
-          for (partition <- partitions1) {
-            val newParition = List(n) :: partition
-            retValue.append(newParition)
-          }
-
-          val partitions2 = itr(n-1,k)
-          for (partition <- partitions2) {
-            //println("Source " + partition)
-            for (j <- 0 to partition.length-1) {
-              val (firstPartDisjointSet,lastPartDisjointSet) = partition.splitAt(j)
-              val newDisjointSet = firstPartDisjointSet ++ List(n::lastPartDisjointSet.head) ++ lastPartDisjointSet.tail
-              val newParition = List(newDisjointSet)
-              retValue.append(newDisjointSet)
+          val index = new Index(n,k)
+          if (cache.contains(index)) {
+            cache.get(index).get
+          }else {
+            val retValue = new ListBuffer[Partition]
+            val partitions1 = itr(n - 1, k - 1)
+            for (partition <- partitions1) {
+              val newParition = List(n) :: partition
+              retValue.append(newParition)
             }
-          }
 
-          retValue.toList
+            val partitions2 = itr(n - 1, k)
+            for (partition <- partitions2) {
+              //println("Source " + partition)
+              for (j <- 0 to partition.length - 1) {
+                val (firstPartDisjointSet, lastPartDisjointSet) = partition.splitAt(j)
+                val newDisjointSet = firstPartDisjointSet ++ List(n :: lastPartDisjointSet.head) ++ lastPartDisjointSet.tail
+                val newParition = List(newDisjointSet)
+                retValue.append(newDisjointSet)
+              }
+            }
+
+            val finalLst = retValue.toList
+            cache += ((index,finalLst))
+            finalLst
+          }
         }
       }
     }
