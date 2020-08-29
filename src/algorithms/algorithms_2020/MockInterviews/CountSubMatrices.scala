@@ -56,25 +56,51 @@ case class Rectangle(val topLeft : Point,val topRight : Point,val bottomLeft : P
 }
 object Solution {
 
+  type RowID=Int
+  type ColId=Int
   def numSubmat(matrix: Array[Array[Int]]): Int = {
-    def allOneRows(rowId : Int,rectangle: Rectangle) : Boolean = {
-      var allOnes = true
-      for (x <- rectangle.topLeft.y to rectangle.topRight.y) {
-        if (matrix(rowId)(x) != 1) {
-          allOnes = false
+    val rowOnes = new mutable.HashMap[RowID,mutable.TreeSet[Int]]()
+    val colOnes = new mutable.HashMap[ColId,mutable.TreeSet[Int]]()
+    for (j <- 0 to matrix.length-1) {
+      for (k <- 0 to matrix(0).length-1) {
+        if (matrix(j)(k) == 1) {
+          val colSet = rowOnes.getOrElseUpdate(j,new mutable.TreeSet[Int]())
+          colSet.add(k)
+
+          val rowSet = colOnes.getOrElseUpdate(k,new mutable.TreeSet[Int]())
+          rowSet.add(j)
         }
       }
-      allOnes
+    }
+
+
+    def allOneRows(rowId : Int,rectangle: Rectangle) : Boolean = {
+      var allOnes = true
+      val lower = rectangle.topLeft.y
+      val higher = rectangle.topRight.y
+
+      val colSet = rowOnes.getOrElse(rowId,new mutable.TreeSet[Int]()).range(lower,higher+1)
+      colSet.size == (higher-lower+1)
+//      for (x <- rectangle.topLeft.y to rectangle.topRight.y) {
+//        if (matrix(rowId)(x) != 1) {
+//          allOnes = false
+//        }
+//      }
+//      allOnes
     }
 
     def allOneCols(colId : Int,rectangle: Rectangle) : Boolean = {
       var allOnes = true
-      for (y <- rectangle.topLeft.x to rectangle.bottomLeft.x) {
-        if (matrix(y)(colId) != 1) {
-          allOnes = false
-        }
-      }
-      allOnes
+      val lower = rectangle.topLeft.x
+      val higher = rectangle.bottomLeft.x
+      val rows = colOnes.getOrElse(colId,new mutable.TreeSet[Int]()).range(lower,higher+1)
+      rows == (higher-lower+1)
+//      for (y <- rectangle.topLeft.x to rectangle.bottomLeft.x) {
+//        if (matrix(y)(colId) != 1) {
+//          allOnes = false
+//        }
+//      }
+      //allOnes
     }
 
     def getValue(rectangle: Rectangle) : Int = {
