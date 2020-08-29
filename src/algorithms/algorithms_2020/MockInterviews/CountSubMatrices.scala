@@ -73,35 +73,17 @@ object Solution {
       }
     }
 
-
-    def allOneRows(rowId : Int,rectangle: Rectangle) : Boolean = {
-      var allOnes = true
-      val lower = rectangle.topLeft.y
-      val higher = rectangle.topRight.y
-
-      val colSet = rowOnes.getOrElse(rowId,new mutable.TreeSet[Int]()).range(lower,higher+1)
-      colSet.size == (higher-lower+1)
-//      for (x <- rectangle.topLeft.y to rectangle.topRight.y) {
-//        if (matrix(rowId)(x) != 1) {
-//          allOnes = false
-//        }
-//      }
-//      allOnes
+    def allOneCols(colId : Int,row1 : Int,row2 : Int) : Boolean = {
+      val rows = colOnes.getOrElse(colId,new mutable.TreeSet[Int]()).range(row1,row2+1)
+      rows.size == (row2-row1+1)
     }
 
-    def allOneCols(colId : Int,rectangle: Rectangle) : Boolean = {
-      var allOnes = true
-      val lower = rectangle.topLeft.x
-      val higher = rectangle.bottomLeft.x
-      val rows = colOnes.getOrElse(colId,new mutable.TreeSet[Int]()).range(lower,higher+1)
-      rows == (higher-lower+1)
-//      for (y <- rectangle.topLeft.x to rectangle.bottomLeft.x) {
-//        if (matrix(y)(colId) != 1) {
-//          allOnes = false
-//        }
-//      }
-      //allOnes
+    def allOneRows(rowId : Int,leftCol : Int,rightCol : Int) : Boolean = {
+      val cols = rowOnes.getOrElse(rowId,new mutable.TreeSet[Int]()).range(leftCol,rightCol+1)
+      cols.size == (rightCol-leftCol+1)
     }
+
+
 
     def getValue(rectangle: Rectangle) : Int = {
       matrix(rectangle.topLeft.x)(rectangle.topLeft.y)
@@ -109,180 +91,125 @@ object Solution {
 
 
 
-    def leftColMerge(originalRectange : Rectangle,newRectange: Rectangle) : Rectangle = {
-      val leftMostTopRow = newRectange.topLeft
-      val leftMostBottomRow = newRectange.bottomLeft
-
-      if (originalRectange.topLeft.y == leftMostTopRow.y-1) {
-        //Can be mergged
-        if (allOneCols(originalRectange.topLeft.y,originalRectange)) {
-          new Rectangle(new Point(leftMostTopRow.x,leftMostTopRow.y-1),
-                        newRectange.topRight,
-                        new Point(leftMostBottomRow.x,leftMostTopRow.y-1),
-            newRectange.bottomRight)
-        }else {
-          null
-        }
-      }else {
-        null
-      }
-    }
-
-    def rightColMerge(originalRectange : Rectangle,newRectange: Rectangle) : Rectangle = {
-      val rightMostTopRow = newRectange.topRight
-      val rightMostBottomRow = newRectange.bottomRight
-
-      if (originalRectange.topRight.y == rightMostTopRow.y+1) {
-        //Can be merged
-        if (allOneCols(originalRectange.topRight.y,originalRectange)) {
-          new Rectangle(newRectange.topLeft,newRectange.topRight.right(),newRectange.bottomLeft,newRectange.bottomRight.right())
-        }else {
-          null
-        }
-      }else {
-        null
-      }
-    }
-
-
-    def bottomRowMerge(originalRectange : Rectangle,newRectange: Rectangle) : Rectangle = {
-      val bottomLeft = newRectange.bottomLeft
-      val bottomRight = newRectange.bottomRight
-
-      if (originalRectange.bottomLeft.x == bottomLeft.x+1) {
-        //Can be merged
-        if (allOneRows(originalRectange.bottomLeft.x,originalRectange)) {
-          new Rectangle(newRectange.topLeft,newRectange.topRight,newRectange.bottomLeft.down(),newRectange.bottomRight.down())
-        }else {
-          null
-        }
-      }else {
-        null
-      }
-    }
-
-    def topRowMerge(originalRectange : Rectangle,newRectange: Rectangle) : Rectangle = {
-      val topLeft = newRectange.topLeft
-      val topRight = newRectange.topRight
-
-      if (originalRectange.topLeft.x == topLeft.x-1) {
-        //Can be merged
-        if (allOneRows(originalRectange.topLeft.x,originalRectange)) {
-          new Rectangle(newRectange.topLeft.up(),newRectange.topRight.up(),newRectange.bottomLeft,newRectange.bottomRight)
-        }else {
-          null
-        }
-      }else {
-        null
-      }
-    }
-
     //val set = new mutable.HashSet[Rectangle]()
+    def topRow(lst : List[Int]) : Int = lst.head
+    def bottomRow(lst : List[Int]) : Int = lst.tail.head
+    def leftCol(lst : List[Int]) : Int = lst.tail.tail.head
+    def rightCol(lst : List[Int]) : Int = lst.tail.tail.tail.head
 
 
-    val cache = new mutable.HashMap[Rectangle,Set[Rectangle]]()
-    def countAllOnes(rectangle: Rectangle) : Set[Rectangle] = {
-      if (rectangle.rowSize() == 1 && rectangle.colSize() == 1) {
-        if (getValue(rectangle) == 1) {
-          Set(rectangle)
-        } else {
-          Set()
-        }
-      }else {
 
-        if (cache.contains(rectangle)) {
-          cache.get(rectangle).get
-        }else {
-          val currentSet = new mutable.HashSet[Rectangle]()
-          var isAllOne = false
-          if (rectangle.colSize() > 1) {
+    val rows = matrix.length
+    val cols = matrix(0).length
 
-            val l = countAllOnes(rectangle.removeLeftCol())
-            currentSet.addAll(l)
-            for (itr <- l) {
-              val lMerged = leftColMerge(rectangle, itr)
-              if (lMerged != null) {
-                currentSet.add(lMerged)
+
+    val dp = Array.ofDim[Set[List[Int]]](rows,rows,cols,cols)
+    for (bRow <- 0 to rows-1) {
+      for (eRow <- bRow to rows-1) {
+        for (bCol <- 0 to cols-1) {
+          for (eCol <- bCol to cols-1) {
+            dp(bRow)(eRow)(bCol)(eCol) = Set()
+            if (bRow == eRow && bCol == eCol) {
+              if (matrix(bRow)(bCol) == 1) {
+                dp(bRow)(eRow)(bCol)(eCol) = Set(List(bRow,eRow,bCol,eCol))
+              }else {
+                dp(bRow)(eRow)(bCol)(eCol) = Set()
               }
-            }
-
-
-            val rSet = countAllOnes(rectangle.removeRightCol())
-            currentSet.addAll(rSet)
-            for (r <- rSet) {
-              val rMerged = rightColMerge(rectangle, r)
-              if (rMerged != null) {
-                currentSet.add(rMerged)
+            }else {
+              if (bRow == eRow) {
+                //println("Here " + bCol + " " + eCol)
+                if (allOneRows(bRow,bCol,eCol)) {
+                  //Total is
+                  dp(bRow)(eRow)(bCol)(eCol) = Set(List(bRow,eRow,bCol,eCol))
+                }
+              }else {
+                if (bCol == eCol)  {
+                  if (allOneCols(bCol,bRow,eRow)) {
+                    dp(bRow)(eRow)(bCol)(eCol) = Set(List(bRow,eRow,bCol,eCol))
+                  }
+                }
               }
             }
           }
-
-          if (rectangle.rowSize() > 1) {
-            val lSet = countAllOnes(rectangle.removeTopRow())
-            currentSet.addAll(lSet)
-            for (l <- lSet) {
-              val lMerged = topRowMerge(rectangle, l)
-              if (lMerged != null) {
-                currentSet.add(lMerged)
-              }
-            }
-
-            val rSet = countAllOnes(rectangle.removeBottomRow())
-            currentSet.addAll(rSet)
-            for (r <- rSet) {
-              val rMerged = bottomRowMerge(rectangle, r)
-              if (rMerged != null) {
-                currentSet.add(rMerged)
-              }
-            }
-
-
-          }
-
-
-          //Is this all ones
-          var allTopRowsOnes = allOneRows(rectangle.topLeft.x, rectangle)
-          var allBottomRowOnes = allOneRows(rectangle.bottomLeft.x, rectangle)
-
-          var allLeftColOnes = allOneCols(rectangle.topLeft.y, rectangle)
-          val allRightColOnes = allOneCols(rectangle.topRight.y, rectangle)
-
-          if (allTopRowsOnes && allBottomRowOnes && allLeftColOnes && allRightColOnes) {
-            var isCurrentAllOne = false
-            if (rectangle.rowSize() > 1) {
-              val topRowRemoved = rectangle.removeTopRow()
-              if (currentSet.contains(topRowRemoved)) {
-                isCurrentAllOne = true
-              }
-            }
-
-            if (isCurrentAllOne == false && rectangle.colSize() > 1) {
-              val leftColRemoved = rectangle.removeLeftCol()
-              if (currentSet.contains(leftColRemoved)) {
-                isCurrentAllOne = true
-              }
-            }
-
-            if (isCurrentAllOne) {
-              currentSet.add(rectangle)
-            }
-          }
-
-          val result = currentSet.toSet
-          cache += ((rectangle, currentSet.toSet))
-          result
         }
       }
     }
 
-    val rows = matrix.length-1
-    val cols = matrix(0).length-1
-    val topLeft = new Point(0,0)
-    val topRight = new Point(0,cols)
-    val bottomLeft = new Point(rows,0)
-    val bottomRight = new Point(rows,cols)
-    val rectangle = new Rectangle(topLeft,topRight,bottomLeft,bottomRight)
-    val set = countAllOnes(rectangle)
-    set.size
+
+    for (bRow <- rows-1 to 0 by -1) {
+      for (eRow <- bRow+1 to rows-1) {
+        for (bCol <- cols-1 to 0 by -1) {
+          for (eCol <- bCol+1 to cols-1) {
+            //println("Here")
+            //println(bRow + " " + eRow + " " + bCol + " " + eCol + " ")
+            val newSet = new mutable.HashSet[List[Int]]()
+
+            val topRowRemoved = dp(bRow+1)(eRow)(bCol)(eCol)
+
+            //println(topRowRemoved)
+            for (s <- topRowRemoved) {
+              val sTopRow = s.head
+              if (sTopRow == bRow+1 && allOneRows(bRow,leftCol(s),rightCol(s))) {
+                //println("Adding top Row" + List(bRow,bottomRow(s),leftCol(s),rightCol(s)))
+                newSet.add(List(bRow,bottomRow(s),leftCol(s),rightCol(s)))
+              }
+            }
+
+            val bottomRowRemoved = dp(bRow)(eRow-1)(bCol)(eCol)
+
+            for (s <- bottomRowRemoved) {
+              val sBottomRow = bottomRow(s)
+              if (sBottomRow == eRow-1 && allOneRows(eRow,leftCol(s),rightCol(s))) {
+                //println("Adding bottom Row" + List(topRow(s),eRow,leftCol(s),rightCol(s)))
+                newSet.add(List(topRow(s),eRow,leftCol(s),rightCol(s)))
+              }
+            }
+
+            val leftColRemoved = dp(bRow)(eRow)(bCol+1)(eCol)
+
+            for (s <- leftColRemoved) {
+              val sLeftCol = leftCol(s)
+              if (sLeftCol == bCol+1 && allOneCols(bCol,topRow(s),bottomRow(s))) {
+                //println("Adding left Col" + List(topRow(s),bottomRow(s),bCol,rightCol(s)))
+                newSet.add(List(topRow(s),bottomRow(s),bCol,rightCol(s)))
+              }
+            }
+
+            val rightColRemoved = dp(bRow)(eRow)(bCol)(eCol-1)
+            //println("Right col " + rightColRemoved)
+            for (s <- rightColRemoved) {
+              val sRightCol = rightCol(s)
+
+              if (sRightCol == eCol-1 && allOneCols(eCol,topRow(s),bottomRow(s))) {
+                newSet.add(List(topRow(s),bottomRow(s),leftCol(s),eCol))
+              }
+            }
+
+            //println("test")
+            dp(bRow)(eRow)(bCol)(eCol) = newSet.toSet
+            //println(bRow + " " + eRow + " " + bCol + " " + eCol + " " + newSet.toSet)
+
+          }
+        }
+      }
+    }
+
+    var count = 0
+    for (bRow <- 0 to rows-1) {
+      for (eRow <- bRow to rows-1) {
+        for (bCol <- 0 to cols-1) {
+          for (eCol <- bCol to cols-1) {
+            count = count + dp(bRow)(eRow)(bCol)(eCol).size
+          }
+        }
+      }
+    }
+
+    count
+
+
+
+
+
   }
 }
