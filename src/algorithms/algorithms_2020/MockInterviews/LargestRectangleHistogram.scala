@@ -6,13 +6,10 @@ object Solution {
 
     var maxArea = 0
     for (j <- 0 to heights.length-1) {
+      var minHeight = heights(j)
       for (k <- j to heights.length-1) {
-        var minHeight = heights(j)
-        for (m <- j+1 to k) {
-          if (heights(m) < minHeight) {
-            minHeight = heights(m)
-          }
-
+        if (heights(k) < minHeight) {
+          minHeight = heights(k)
 
         }
 
@@ -20,6 +17,8 @@ object Solution {
         if (area > maxArea) {
           maxArea = area
         }
+
+
       }
     }
 
