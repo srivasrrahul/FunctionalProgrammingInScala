@@ -1,4 +1,5 @@
 import scala.collection.mutable
+import scala.collection.mutable.ListBuffer
 object Solution {
 
   def numSubmat(matrix: Array[Array[Int]]): Int = {
@@ -53,77 +54,55 @@ object Solution {
     val cols = matrix(0).length
 
 
-    val dp = Array.ofDim[Boolean](rows,rows,cols,cols)
+    val dp = Array.ofDim[List[(Int,Int)]](rows,rows)
+
     //println("Hello " + rowOnes.size + " " + colOnes.size)
     for (bRow <- 0 to rows-1) {
-      for (eRow <- bRow to rows-1) {
-        for (bCol <- 0 to cols-1) {
-          for (eCol <- bCol to cols-1) {
 
-            dp(bRow)(eRow)(bCol)(eCol) = false
-            if (bRow == eRow && bCol == eCol) {
-              if (matrix(bRow)(bCol) == 1) {
-                dp(bRow)(eRow)(bCol)(eCol) = true
-              }
-            }else {
-              if (bRow == eRow) {
-                //println("Here " + bCol + " " + eCol)
-                if (allOneRows(bRow,bCol,eCol)) {
-                  //Total is
-                  dp(bRow)(eRow)(bCol)(eCol) = true
-                }
-              }else {
-                // if (bCol == eCol)  {
-                //   if (allOneCols(bCol,bRow,eRow)) {
-                //     dp(bRow)(eRow)(bCol)(eCol) = 1
-                //   }
-                // }
-              }
-            }
+      var lst = new ListBuffer[(Int,Int)]
+      for (bCol <- 0 to cols-1) {
+        for (eCol <- bCol to cols-1) {
+          if (allOneRows(bRow,bCol,eCol)) {
+            lst.append((bCol,eCol))
           }
         }
       }
+
+      dp(bRow)(bRow) = lst.toList
+
     }
+
+
+
+
 
 
 
     for (bRow <- rows-1 to 0 by -1) {
       for (eRow <- bRow+1 to rows-1) {
-        for (bCol <- 0 to cols-1) {
-          for (eCol <- bCol to cols-1) {
-
-            var newCount = 0
-
-            val topRowRemovedCount = dp(bRow+1)(eRow)(bCol)(eCol)
-            if (topRowRemovedCount == true && allOneRows(bRow,bCol,eCol)) {
-              dp(bRow)(eRow)(bCol)(eCol) = true
-            }
-
-
-
+        val topRowRemovedLst = dp(bRow+1)(eRow)
+        val lstBuffer = new ListBuffer[(Int,Int)]
+        for ((bCol,eCol) <- topRowRemovedLst) {
+          if (allOneRows(bRow,bCol,eCol)) {
+            lstBuffer.append((bCol,eCol))
           }
         }
+
+        dp(bRow)(eRow) = lstBuffer.toList
       }
     }
 
     var count = 0
     for (bRow <- 0 to rows-1) {
       for (eRow <- bRow to rows-1) {
-        for (bCol <- 0 to cols-1) {
-          for (eCol <- bCol to cols-1) {
-            if (dp(bRow)(eRow)(bCol)(eCol) == true) {
-              count = count + 1
-            }
-
-          }
+        val lst = dp(bRow)(eRow)
+        if (lst != null) {
+          count = count + lst.size
         }
       }
     }
 
     count
-
-
-
 
 
   }
