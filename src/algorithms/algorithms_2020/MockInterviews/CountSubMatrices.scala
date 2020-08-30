@@ -48,15 +48,6 @@ object Solution {
       }
     }
 
-    //    for ((rowId,colArr) <- rowOnes) {
-    //      println("rowId " + rowId + " " + colArr.mkString(","))
-    //    }
-    //
-    //    for ((colId,rowArr) <- rowOnes) {
-    //      println("colId " + colId + " " + rowArr.mkString(","))
-    //    }
-
-    //println("=========")
     for (j <- 1 to matrix.length-1) {
       for (k <- 1 to matrix(0).length-1) {
         if (matrix(j)(k) == 1) {
@@ -127,30 +118,28 @@ object Solution {
 
 
 
-    val dp = Array.ofDim[Set[List[Int]]](rows,rows,cols,cols)
+    val dp = Array.ofDim[Int](rows,rows,cols,cols)
     for (bRow <- 0 to rows-1) {
       for (eRow <- bRow to rows-1) {
         for (bCol <- 0 to cols-1) {
           for (eCol <- bCol to cols-1) {
 
-            dp(bRow)(eRow)(bCol)(eCol) = Set()
+            dp(bRow)(eRow)(bCol)(eCol) = 0
             if (bRow == eRow && bCol == eCol) {
               if (matrix(bRow)(bCol) == 1) {
-                dp(bRow)(eRow)(bCol)(eCol) = Set(List(bRow,eRow,bCol,eCol))
-              }else {
-                dp(bRow)(eRow)(bCol)(eCol) = Set()
+                dp(bRow)(eRow)(bCol)(eCol) = 1
               }
             }else {
               if (bRow == eRow) {
                 //println("Here " + bCol + " " + eCol)
                 if (allOneRows(bRow,bCol,eCol)) {
                   //Total is
-                  dp(bRow)(eRow)(bCol)(eCol) = Set(List(bRow,eRow,bCol,eCol))
+                  dp(bRow)(eRow)(bCol)(eCol) = 1
                 }
               }else {
                 if (bCol == eCol)  {
                   if (allOneCols(bCol,bRow,eRow)) {
-                    dp(bRow)(eRow)(bCol)(eCol) = Set(List(bRow,eRow,bCol,eCol))
+                    dp(bRow)(eRow)(bCol)(eCol) = 1
                   }
                 }
               }
@@ -165,64 +154,15 @@ object Solution {
       for (eRow <- bRow+1 to rows-1) {
         for (bCol <- cols-1 to 0 by -1) {
           for (eCol <- bCol+1 to cols-1) {
-            //println("Here")
-            //println(bRow + " " + eRow + " " + bCol + " " + eCol + " ")
-            val newSet = new mutable.HashSet[List[Int]]()
 
-            val topRowRemoved = dp(bRow+1)(eRow)(bCol)(eCol)
+            var newCount = 0
 
-            //println(topRowRemoved)
-            for (s <- topRowRemoved) {
-              val sTopRow = s.head
-              if (sTopRow == bRow+1 && allOneRows(bRow,leftCol(s),rightCol(s))) {
-                //println("Adding top Row" + List(bRow,bottomRow(s),leftCol(s),rightCol(s)))
-                newSet.add(List(bRow,bottomRow(s),leftCol(s),rightCol(s)))
-              }
+            val topRowRemovedCount = dp(bRow+1)(eRow)(bCol)(eCol)
+            if (topRowRemovedCount > 0 && allOneRows(bRow,bCol,eCol)) {
+              newCount = newCount + 1
             }
 
-
-            val bottomRowRemoved = dp(bRow)(eRow-1)(bCol)(eCol)
-
-            for (s <- bottomRowRemoved) {
-              val sBottomRow = bottomRow(s)
-              if (sBottomRow == eRow-1 && allOneRows(eRow,leftCol(s),rightCol(s))) {
-                //println("Adding bottom Row" + List(topRow(s),eRow,leftCol(s),rightCol(s)))
-                newSet.add(List(topRow(s),eRow,leftCol(s),rightCol(s)))
-              }
-            }
-
-
-
-            val leftColRemoved = dp(bRow)(eRow)(bCol+1)(eCol)
-
-            for (s <- leftColRemoved) {
-              val sLeftCol = leftCol(s)
-              if (sLeftCol == bCol+1 && allOneCols(bCol,topRow(s),bottomRow(s))) {
-                //println("Adding left Col" + List(topRow(s),bottomRow(s),bCol,rightCol(s)))
-                newSet.add(List(topRow(s),bottomRow(s),bCol,rightCol(s)))
-              }
-            }
-
-
-
-            val rightColRemoved = dp(bRow)(eRow)(bCol)(eCol-1)
-            //println("Right col " + rightColRemoved)
-            for (s <- rightColRemoved) {
-              val sRightCol = rightCol(s)
-
-              if (sRightCol == eCol-1 && allOneCols(eCol,topRow(s),bottomRow(s))) {
-                newSet.add(List(topRow(s),bottomRow(s),leftCol(s),eCol))
-              }
-            }
-
-            //
-            //println("test")
-            dp(bRow)(eRow)(bCol)(eCol) = newSet.toSet
-            // dp(bRow+1)(eRow)(bCol)(eCol) = Set()
-            // dp(bRow)(eRow)(bCol)(eCol-1) = Set()
-            // dp(bRow)(eRow-1)(bCol)(eCol) = Set()
-            // dp(bRow)(eRow)(bCol+1)(eCol) = Set()
-            //println(bRow + " " + eRow + " " + bCol + " " + eCol + " " + newSet.toSet)
+            dp(bRow)(eRow)(bCol)(eCol) = newCount
 
           }
         }
@@ -234,7 +174,7 @@ object Solution {
       for (eRow <- bRow to rows-1) {
         for (bCol <- 0 to cols-1) {
           for (eCol <- bCol to cols-1) {
-            count = count + dp(bRow)(eRow)(bCol)(eCol).size
+            count = count + dp(bRow)(eRow)(bCol)(eCol)
           }
         }
       }
