@@ -52,20 +52,11 @@ object Solution {
     //
     val rows = matrix.length
     val cols = matrix(0).length
-    //
-    //    //       for ((rowId,colArr) <- rowOnes) {
-    //    //       println("rowId "  + rowId + " " + colArr.mkString(","))
-    //    //     }
-    //
-    //    //     for ((colId,rowArr) <- colOnes) {
-    //    //       println("colId "  + colId + " " + rowArr.mkString(","))
-    //    //     }
-    //
 
 
 
     val dp = Array.ofDim[Int](rows,rows,cols,cols)
-    println("Hello " + rowOnes.size + " " + colOnes.size)
+    //println("Hello " + rowOnes.size + " " + colOnes.size)
     for (bRow <- 0 to rows-1) {
       for (eRow <- bRow to rows-1) {
         for (bCol <- 0 to cols-1) {
@@ -97,15 +88,15 @@ object Solution {
     }
 
 
-    for (bRow <- rows-1 to 0 by -1) {
+    for (bRow <- 0 to rows-1) {
       for (eRow <- bRow+1 to rows-1) {
-        for (bCol <- cols-1 to 0 by -1) {
+        for (bCol <- 0 to cols-1) {
           for (eCol <- bCol+1 to cols-1) {
 
             var newCount = 0
 
-            val topRowRemovedCount = dp(bRow+1)(eRow)(bCol)(eCol)
-            if (topRowRemovedCount > 0 && allOneRows(bRow,bCol,eCol)) {
+            val topRowRemovedCount = dp(bRow)(eRow-1)(bCol)(eCol)
+            if (topRowRemovedCount > 0 && allOneRows(eRow,bCol,eCol)) {
               newCount = newCount + 1
             }
 
