@@ -20,35 +20,34 @@ object Solution {
           cache.get(index).get
         }else {
           val optionLst = new ListBuffer[Int]
-          if (parentWatched == true) {
-            optionLst.append(itr(node.left, false, false) + itr(node.right, false, false))
+          if (mustAddAtRoot) {
+            //No other option
             optionLst.append(1 + itr(node.left, true, false) + itr(node.right, true, false))
           } else {
-            //Need to add one at root
-            if (mustAddAtRoot) {
-              optionLst.append(1 + itr(node.left, true, false) + itr(node.right, true, false))
-            } else {
-              //You can add at current
+            //You can add at current
+            optionLst.append(1 + itr(node.left, true, false) + itr(node.right, true, false))
 
-              optionLst.append(1 + itr(node.left, true, false) + itr(node.right, true, false))
-
-              //You can ask left to add compulsiorily
-              if (node.left != null) {
-                optionLst.append(itr(node.left, false, true) + itr(node.right, false, false))
-              }
-
-              //You can ask right to add compulsiorily
-              if (node.right != null) {
-                optionLst.append(itr(node.left, false, false) + itr(node.right, false, true))
-              }
-
-
+            //You can ask left to add compulsiorily
+            if (node.left != null) {
+              optionLst.append(itr(node.left, false, true) + itr(node.right, false, false))
             }
+
+            //You can ask right to add compulsiorily
+            if (node.right != null) {
+              optionLst.append(itr(node.left, false, false) + itr(node.right, false, true))
+            }
+
+            //Neither add at current and nor ask child if parent is watched
+            if (parentWatched) {
+              optionLst.append(itr(node.left, false, false) + itr(node.right, false, false))
+            }
+
+
 
           }
 
           val minValue = optionLst.min
-          cache += ((index,optionLst.min))
+          cache += ((index, optionLst.min))
           //optionLst.min
           minValue
         }
