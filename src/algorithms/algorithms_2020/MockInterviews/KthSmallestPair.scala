@@ -4,21 +4,32 @@ import scala.collection.mutable.ArrayBuffer
 class MedianFinder(val KIndex : Int) {
 
   /** initialize your data structure here. */
-  val leftPQ = mutable.PriorityQueue.empty[Int] //leftPQ is of first k. This is max heap k,k-1,k-2
-  //val rightPQ = mutable.PriorityQueue.empty[Int](Ordering[Int].reverse) //this is min heap k+1,k+2,k+3
+  val leftPQ = new mutable.TreeMap[Int,Int]() //leftPQ is unique elements smaller than k. This is max heap k,k-1,k-2
+  var leftCount = 0
 
   def addNum(num: Int) : Unit = {
-    if (leftPQ.isEmpty) {
-      leftPQ.addOne(num)
+    if (leftCount < KIndex) {
+      val defaultCount = leftPQ.getOrElseUpdate(num,0)
+      leftPQ += ((num,defaultCount+1))
+      leftCount = leftCount+1
     }else {
-      if (leftPQ.size < KIndex) {
-        leftPQ.addOne(num)
-      } else {
-        val kthElement = leftPQ.head
-        if (num < kthElement) {
-          leftPQ.addOne(num)
-          val topLeft = leftPQ.dequeue()
-          //rightPQ.addOne(topLeft)
+      val (largestElement,largestCount) = leftPQ.last
+      if (num > largestElement) {
+        //ignore
+      }else {
+
+        if (num == largestElement) {
+          //Do nothing
+        }else {
+          //num < largestElement
+          val defaultCount = leftPQ.getOrElseUpdate(num,0)
+          leftPQ += ((num,defaultCount+1))
+
+          if (largestCount == 1) {
+            leftPQ.remove(largestElement)
+          }else {
+            leftPQ += ((largestElement,largestCount-1))
+          }
         }
       }
     }
@@ -26,7 +37,16 @@ class MedianFinder(val KIndex : Int) {
   }
 
   def findK(): Int = {
-    leftPQ.head
+    var alreadyFound = 0
+    var retValue = -1
+    for ((key,count) <- leftPQ if retValue == -1) {
+      alreadyFound = alreadyFound + count
+      if (alreadyFound <= KIndex) {
+        retValue = key
+      }
+    }
+
+    retValue
   }
 
   def debug() : Unit = {
@@ -44,7 +64,7 @@ object Solution {
     for (j <- 0 to nums.length-1) {
       for (k <- j+1 to nums.length-1) {
         val diff = math.abs(nums(j)-nums(k))
-        medianFinder.addNum(k)
+        medianFinder.addNum(diff)
       }
     }
 
