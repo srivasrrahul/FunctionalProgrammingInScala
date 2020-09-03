@@ -1,77 +1,89 @@
 import scala.collection.mutable
-import scala.collection.mutable.ListBuffer
-import scala.util.control.Breaks._
 
-case class Edge(val u : Int,val v : Int)
+class Graph(val n : Int) {
+  val conflictEdges = new mutable.HashMap[Int,mutable.HashSet[Int]]()
+  for (j <- 1 to n) {
+    conflictEdges += ((j,new mutable.HashSet[Int]()))
+  }
 
+  def addConflict(j : Int, k : Int): Unit = {
+    conflictEdges.get(j).get.add(k)
+    conflictEdges.get(k).get.add(j)
+  }
+
+  def getAllConflicts(j : Int) : Set[Int] = {
+    conflictEdges.get(j).get.toSet
+  }
+}
+
+case class Index(val index : Int,val s1 : Set[Int],val s2 : Set[Int])
 object Solution {
 
-  def isBipartite(graph: Array[Array[Int]]): Boolean = {
-    val vertexCount = graph.length
 
-    val set1 = new mutable.HashSet[Int]()
-    val set2 = new mutable.HashSet[Int]()
+  def possibleBipartition(N: Int, dislikes: Array[Array[Int]]): Boolean = {
+    val graph = new Graph(N)
+    for (dislike <- dislikes) {
+      val j = dislike(0)
+      val k = dislike(1)
+
+      graph.addConflict(j,k)
+    }
 
     val visited = new mutable.HashSet[Int]()
-    var biPartitlePossible = true
+    val colors = new mutable.HashMap[Int,Int]()
+    val parents = new mutable.HashMap[Int,Int]()
 
-    def explore(current : Int) : Unit = {
-      //println("=====++Exploring++===== " + current)
-      visited.add(current)
+    def getParentColor(j : Int) : Int = {
+      //0 means no color
+      if (parents.contains(j)) {
+        colors.get(parents.get(j).get).get
+      }else {
+        0
+      }
+    }
+    val q = new mutable.Queue[Int]()
 
-      var canPutInFirst = true
-      var canPutInSecond = true
+    var possible = true
+    def bfs() : Unit = {
+      while (q.isEmpty == false && possible == true) {
+        val top = q.dequeue()
+        val parentCol = getParentColor(top)
 
-      for (neigbour <- graph(current)) {
-        //println("Neigbour " + neigbour + " for " + current)
-        if (visited(neigbour) == true) {
-          //println("Neigbour " + neigbour + " for " + current + " visited ")
-          if (set1.contains(neigbour)) {
-            canPutInFirst = false
-          }else {
-            if (set2.contains(neigbour)) {
-              canPutInSecond = false
+        if (parentCol == 0) {
+          colors += ((top, 1))
+        } else {
+          val newColor = if (parentCol == 1) 2 else 1
+
+          colors += ((top, if (parentCol == 1) 2 else 1))
+        }
+
+        visited.add(top)
+
+        for (j <- graph.getAllConflicts(top)) {
+          if (visited.contains(j) == false) {
+            parents += ((j, top))
+            q.append(j)
+          } else {
+            //Check its colore
+            val jColor = colors.get(j).get
+            if (jColor == colors.get(top).get) {
+              possible = false
             }
           }
         }
-      }
 
-      (canPutInFirst,canPutInSecond) match {
-
-        case (true,_) => {
-          set1.add(current)
-        }
-        case (_,true) => {
-          set2.add(current)
-        }
-        case (false,false) => {
-          //we cant put anywhere
-          biPartitlePossible = false
-          //println("Makring flse for " + current)
-        }
-      }
-
-      if (biPartitlePossible == true) {
-        for (neigbour <- graph(current)) {
-          if (visited.contains(neigbour) == false) {
-            explore(neigbour)
-          }
-        }
       }
     }
 
-    for (j <- 0 to vertexCount-1) {
-      if (visited.contains(j) == false) {
-        explore(j)
+    if (possible == true) {
+      for (j <- 1 to N) {
+        if (visited.contains(j) == false) {
+          q.addOne(j)
+          bfs()
+        }
       }
-
     }
+    possible
 
-    biPartitlePossible
-  }
-
-  def main(args: Array[String]): Unit = {
-    val graph = Array(Array(1),Array(0,3),Array(3),Array(1,2))
-    println(isBipartite(graph))
   }
 }
