@@ -21,6 +21,8 @@ class Graph(val n : Int) {
     startNodes.toSet
   }
 }
+
+case class Path(val u : Int,val v : Int)
 object Solution {
   def checkIfPrerequisite(n: Int, prerequisites: Array[Array[Int]], queries: Array[Array[Int]]): Array[Boolean] = {
     val graph = new Graph(n)
@@ -69,24 +71,44 @@ object Solution {
 //    }
 
 
+    val pathCache = new mutable.HashSet[Path]()
     def checkDep(u : Int,v : Int) : Boolean = {
       val q = new mutable.Queue[Int]()
       var depFound = false
       val localVisited = new mutable.HashSet[Int]()
+      val parents = new mutable.HashMap[Int,Int]()
       while (q.isEmpty == false && depFound == false) {
         val top = q.dequeue()
         localVisited.add(top)
-        for (next <- graph.getEdges(top)) {
-          if (next == v) {
-            depFound = true
-          }else {
-            if (localVisited.contains(next) == false) {
-              q.append(next)
+        val pathToV = new Path(top,v)
+        if (pathCache.contains(pathToV)) {
+          depFound = true
+        }else {
+          for (next <- graph.getEdges(top)) {
+            if (next == v) {
+              depFound = true
+            } else {
+              if (localVisited.contains(next) == false) {
+                //pathCache.add(new Index(top, next))
+                parents += ((next,top))
+                q.append(next)
+              }
             }
           }
         }
       }
 
+      if (depFound == true) {
+        var current = v
+        while (current != u) {
+          pathCache.add(new Path(current,v))
+          if (parents.contains(current)) {
+            current = parents.get(current).get
+          }else {
+            current = u
+          }
+        }
+      }
       depFound
     }
 
