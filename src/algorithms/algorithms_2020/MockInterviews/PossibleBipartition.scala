@@ -78,6 +78,9 @@ object Solution {
     if (possible == true) {
       for (j <- 1 to N) {
         if (visited.contains(j) == false) {
+          colors.clear()
+          parents.clear()
+
           q.addOne(j)
           bfs()
         }
