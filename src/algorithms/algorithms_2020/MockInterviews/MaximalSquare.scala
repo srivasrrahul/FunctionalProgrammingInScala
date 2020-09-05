@@ -9,23 +9,23 @@ object Solution {
     }else {
       val rows = matrix.length
       val cols = matrix(0).length
-      val dp = Array.ofDim[List[(Int,Int)]](rows, rows) //List of bCols
+      val dp = Array.ofDim[Set[Int]](rows, rows) //List of eCols
 
 
       var maxArea = 0
       for (bRow <- 0 to rows - 1) {
-        val lstBuffer = new mutable.ListBuffer[(Int,Int)]
+        val lstBuffer = new mutable.HashSet[Int]
         for (bCol <- 0 to cols - 1) {
           if (matrix(bRow)(bCol) == '1') {
-            lstBuffer.append((bCol,bCol))
-            maxArea = 1 //area of 1*1
+            lstBuffer.add(bCol)
+            maxArea = 1 //begins at 1 and ends at 1
           } else {
             //dp(bRow)(bRow)(bCol)(bCol) = false
           }
 
         }
 
-        dp(bRow)(bRow) = lstBuffer.toList //List of bCol and of size 1
+        dp(bRow)(bRow) = lstBuffer.toSet //List of eCol and of size 1
       }
 
 
@@ -69,6 +69,13 @@ object Solution {
       // println("=============================")
       // for ((id,arr) <- colOnes) println(id + " " + arr.mkString(","))
       //println(colOnes)
+      // for (t <- 0 to dp.length-1) {
+      //   // for (u <- 0 to dp(0).length-1) {
+      //   //     print(dp(t)(u)+ ",")
+      //   // }
+      //   println(dp(t).mkString(","))
+      //   //println()
+      // }
       def allRowOnes(rowId: Int, bCol: Int, eCol: Int): Boolean = {
         val rowOne = rowOnes.get(rowId).get
         var total = rowOne(eCol)
@@ -94,38 +101,37 @@ object Solution {
         for (eRow <- bRow + 1 to rows - 1) {
           //1*1,2*2,3*3
           val rowCount = eRow - bRow + 1
-          val lstBuffer = new mutable.ListBuffer[(Int,Int)]
-          for (bCol <- 0 to cols - 1) {
-            val eCol = bCol + rowCount - 1
-
-            for (eCol <- bCol + rowCount - 1 to cols - 1) {
-              if (allRowOnes(eRow, bCol, eCol) && allColOnes(eCol, bRow, eRow) &&
-                dp(bRow)(eRow - 1).contains((bCol,eCol-1))) {
+          val set = new mutable.HashSet[Int]()
+          for (bCol <- 0 to cols-1) {
+            val eCol = bCol + (rowCount-1)
+            if (eCol > 0 && eCol < cols) {
+              if (dp(bRow)(eRow-1).contains(eCol-1) && allRowOnes(eRow,bCol,eCol) && allColOnes(eCol,bRow,eRow)) {
+                //println("Found " + bRow + " " + eRow + " " + bCol + " " + eCol)
+                set.add(eCol)
                 val area = (eCol-bCol+1)*(eCol-bCol+1)
                 if (area > maxArea) {
                   maxArea = area
                 }
-                lstBuffer.append((bCol,eCol))
               }
             }
           }
 
-          dp(bRow)(eRow) = lstBuffer.toList
+          dp(bRow)(eRow) = set.toSet
         }
       }
 
       //Traverse through all row
       //var maxArea = 0
-//      for (bRow <- 0 to rows - 1) {
-//        for (eRow <- bRow to rows - 1) {
-//          for ((colBegin,colEnd) <- dp(bRow)(eRow)) {
-//            val area = (colEnd-colBegin+1)*(colEnd-colBegin+1)
-//            if (area > maxArea) {
-//              maxArea = area
-//            }
-//          }
-//        }
-//      }
+      //      for (bRow <- 0 to rows - 1) {
+      //        for (eRow <- bRow to rows - 1) {
+      //          for ((colBegin,colEnd) <- dp(bRow)(eRow)) {
+      //            val area = (colEnd-colBegin+1)*(colEnd-colBegin+1)
+      //            if (area > maxArea) {
+      //              maxArea = area
+      //            }
+      //          }
+      //        }
+      //      }
 
       maxArea
     }
