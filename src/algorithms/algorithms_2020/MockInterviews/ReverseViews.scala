@@ -18,11 +18,18 @@ object Solution {
           val rValue = nums(j)
           val lValue = rValue*2+1
 
+
           nums.search(lValue,b,mid+1) match {
             case Searching.Found(foundIndex) => {
               //All elements from  founIndex to mid
               //println("For rValue " + rValue + " " + b + " " + e)
-              count = count + (mid-foundIndex+1)
+              var updated = foundIndex
+              var last = foundIndex
+              while (updated >= e && nums(updated) == nums(lValue)) {
+                last = updated
+                updated = updated-1
+              }
+              count = count + (mid-last+1)
             }
             case Searching.InsertionPoint(insertionPoint) => {
 
