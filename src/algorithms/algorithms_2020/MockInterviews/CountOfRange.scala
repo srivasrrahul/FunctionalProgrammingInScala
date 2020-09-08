@@ -1,19 +1,20 @@
+import scala.collection.mutable
+
 class TreeNode(var x : Long,val left : TreeNode = null,val right : TreeNode = null) {
   var range : Range  = null
 
   override def toString = s"TreeNode($range, $x)"
 }
+case class Index(val x : Int,val y : Int)
 class SegTreeWrapper(val sumRange: Range) {
-  var count = 0
+  val map = new mutable.HashMap[Index,Long]()
 
   def createSegmentTree(arr : Array[Int]) : TreeNode = {
     def itr(b : Int,e : Int) : TreeNode = {
       if (b == e) {
         val leaf = new TreeNode(arr(b))
         leaf.range = Range(b,e+1)
-        if (sumRange.contains(leaf.x)) {
-          count = count+1
-        }
+        map += ((new Index(b,e),arr(b)))
         leaf
       }else {
         val mid = b + (e-b)/2
@@ -24,9 +25,7 @@ class SegTreeWrapper(val sumRange: Range) {
         val node = new TreeNode(sum,left,right)
         node.range = Range(b,e+1)
 
-        if (sumRange.contains(node.x)) {
-          count = count+1
-        }
+        map += ((new Index(b,e),node.x))
         node
       }
     }
@@ -91,8 +90,14 @@ object Solution {
       var count = 0
       for (j <- 0 to nums.length-1) {
         for (k <- j to nums.length-1) {
-          val rangeSum =   wrapper.findRangeSum(j,k,root)
-          println("Range sum " + j + " " + k + " " + rangeSum)
+          var rangeSum : Long = 0
+          if (wrapper.map.contains(new Index(j,k))) {
+            rangeSum = wrapper.map.get(new Index(j,k)).get
+          }else {
+            rangeSum = wrapper.findRangeSum(j,k,root)
+          }
+
+          //println("Range sum " + j + " " + k + " " + rangeSum)
           if (baseRange.contains(rangeSum)) {
             count = count + 1
           }
