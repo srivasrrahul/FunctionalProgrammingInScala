@@ -4,11 +4,11 @@ object Solution {
   def numSubmatrixSumTarget(matrix: Array[Array[Int]], target: Int): Int = {
     val rows = matrix.length
     val cols = matrix(0).length
-    val sums = Array.ofDim[Int](rows,rows,cols,cols)
+    //val sums = Array.ofDim[Int](rows,rows,cols,cols)
+
 
     //Each col of size 1 and starting sum
     var count = 0
-
 
     val prefixSums = new mutable.HashMap[Int,Array[Int]]()
     for (j <- 0 to rows-1) {
@@ -31,32 +31,35 @@ object Solution {
       total
     }
 
+
     for (j <- 0 to rows-1) {
-      for (p <- 0 to cols-1) {
-        for (q <- p to cols-1) {
+      val arr = Array.ofDim[Int](cols,cols)
 
-          val sum = getColSum(j,p,q)
-          sums(j)(j)(p)(q) = sum
+      for (k <- j to rows-1) {
+        val newArr = Array.ofDim[Int](cols,cols)
 
-          if (sum == target) {
-            count = count + 1
+        for (p <- 0 to cols-1) {
+          for (q <- p to cols-1) {
+
+            if (j == k) {
+              val sum = getColSum(j,p,q)
+              newArr(p)(q) = sum
+              if (target == sum) {
+                count = count + 1
+              }
+            }else {
+              val newSum = arr(p)(q) + getColSum(k,p,q)
+              newArr(p)(q) = newSum
+              if (target == newSum) {
+                count = count+1
+              }
+            }
           }
         }
 
-      }
-    }
-
-
-    for (j <- 0 to rows-1) {
-      for (k <- j+1 to rows-1) {
-        for (p <- 0 to cols-1) {
-          for (q <- p to cols-1) {
-            val newSum = sums(j)(k-1)(p)(q) + getColSum(k,p,q)
-            if (newSum == target) {
-              count = count+1
-            }
-
-            sums(j)(k)(p)(q) = newSum
+        for (x <- 0 to cols-1) {
+          for (y <- 0 to cols-1) {
+            arr(x)(y) = newArr(x)(y)
           }
         }
       }
