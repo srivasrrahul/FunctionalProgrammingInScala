@@ -29,12 +29,12 @@ object Solution {
     }
 
 
-    val cache = new mutable.HashMap[Index,Option[List[Int]]]()
-    def partition(j : Int,p : Int) : Option[List[Int]] = {
+    val cache = new mutable.HashMap[Index,Option[Int]]()
+    def partition(j : Int,p : Int) : Option[Int] = {
       //println(j + " " + p)
       val index = new Index(j,p)
       if (j >= s.length && p == 0) {
-        Some(List())
+        Some(0)
       }else {
         if (j >= s.length) {
           None
@@ -54,13 +54,11 @@ object Solution {
 
                   val localCost = makePalindrome(j,k-1)
 
-                  if (costs.get.isEmpty) {
+                  if (costs.isEmpty) {
                     lsts.append(localCost)
                   } else {
 
-                    for (cost <- costs.get) {
-                      lsts.append(localCost + cost)
-                    }
+                    lsts.append(localCost + costs.get)
 
                   }
 
@@ -68,7 +66,7 @@ object Solution {
               }
 
               if (lsts.size > 0) {
-                val retValue = Some(lsts.toList)
+                val retValue = Some(lsts.min)
                 cache += ((index, retValue))
                 retValue
               } else {
@@ -84,12 +82,12 @@ object Solution {
 
     val lsts = partition(0,k)
     if (lsts.isDefined) {
-      lsts.get.min
+      lsts.get
     }else {
       0
     }
-//    println(lsts)
-//    0
+    //    println(lsts)
+    //    0
   }
 
   def main(args: Array[String]): Unit = {
