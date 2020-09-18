@@ -5,8 +5,8 @@ import scala.collection.mutable.ListBuffer
 case class Index(val x : Int,val y : Int)
 object Solution {
   def minDifficulty(jobDifficulty: Array[Int], d: Int): Int = {
-    val cache = new mutable.HashMap[Index,Option[List[Int]]]()
-    def itr(dayIndex : Int,jobIndex : Int) : Option[List[Int]] = {
+    val cache = new mutable.HashMap[Index,Option[Int]]()
+    def itr(dayIndex : Int,jobIndex : Int) : Option[Int] = {
       if (dayIndex < 1 && jobIndex >= 0) {
         None
       }else {
@@ -20,7 +20,7 @@ object Solution {
           if (jobIndex < 0) {
             None
           } else {
-            Some(List(maxDiff))
+            Some(maxDiff)
           }
         } else {
           val index = new Index(dayIndex, jobIndex)
@@ -39,9 +39,7 @@ object Solution {
               val pLst = itr(dayIndex - 1, j)
 
               if (pLst.isDefined) {
-                for (diffOption <- pLst.get) {
-                  lstBuffer.append(maxDiff + diffOption)
-                }
+                lstBuffer.append(maxDiff + pLst.get)
               }
             }
 
@@ -49,9 +47,9 @@ object Solution {
               cache += ((index,None))
               None
             } else {
-              val lst = lstBuffer.toList
-              cache += ((index,Some(lst)))
-              Some(lst)
+              val retValue = lstBuffer.min
+              cache += ((index,Some(retValue)))
+              Some(retValue)
             }
           }
         }
@@ -61,7 +59,7 @@ object Solution {
     val lst = itr(d,jobDifficulty.length-1)
     //println(lst)
     if (lst.isDefined) {
-      lst.get.min
+      lst.get
     }else {
       -1
     }
