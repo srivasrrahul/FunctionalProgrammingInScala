@@ -1,3 +1,6 @@
+import scala.collection.mutable
+
+case class Index(val j : Int,val state : Char)
 object Solution {
   def countVowelPermutation(n: Int): Int = {
     def getNext(current : Char) : List[Char] = {
@@ -11,18 +14,39 @@ object Solution {
       }
     }
 
-    var count = 0
-    def itr(j : Int,state : Char) : Unit = {
+    val cache = new mutable.HashMap[Index,Option[Long]]()
+    def itr(j : Int,state : Char) : Option[Long] = {
       if (j == n) {
-        count = count+1
+        Some(1)
       }else {
-        for (next <- getNext(state)) {
-          itr(j+1,next)
+        val index = new Index(j,state)
+        if (cache.contains(index)) {
+          cache.get(index).get
+        }else {
+          var count : Long = 0
+          for (next <- getNext(state)) {
+            val res = itr(j + 1, next)
+            if (res.isDefined) {
+              count = (count+res.get) % (Math.pow(10,9)+7).toInt
+            }
+          }
+
+          if (count == 0) {
+            cache += ((index,None))
+            None
+          }else {
+            cache += ((index,Some(count % (Math.pow(10,9)+7).toInt)))
+            Some(count)
+          }
         }
       }
     }
 
-    itr(0,'_')
-    count
+    var count = itr(0,'_')
+    if (count.isDefined) {
+      count.get.toInt
+    }else {
+      0
+    }
   }
 }
