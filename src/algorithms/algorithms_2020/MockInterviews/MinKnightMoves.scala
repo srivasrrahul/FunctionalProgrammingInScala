@@ -25,42 +25,21 @@ object Solution {
     List(rightUp,rightDown,leftUp,leftDown,downLeft,downRight,upLeft,upRight)
   }
   def minKnightMoves(x: Int, y: Int): Int = {
-    val pq = mutable.PriorityQueue.empty[PQNode](PQOrdering)
+    //val pq = mutable.PriorityQueue.empty[PQNode](PQOrdering)
 
 
-    pq.addOne(new PQNode(0,new Node(0,0)))
+    //pq.addOne(new PQNode(0,new Node(0,0)))
     val target = new Node(x,y)
     var maxDist = Int.MaxValue
     val visited = new mutable.HashSet[Node]()
 
-    while (maxDist == Int.MaxValue && pq.size > 0) {
-      val top = pq.dequeue()
-      visited.add(top.node)
-      //println("distabce " + top.dist)
-      if (top.node == target) {
-        //println("Natcged ")
-        maxDist = top.dist
-      } else {
-        for (next <- nextNightMove(top.node)) {
-          if (visited.contains(next) == false) {
-            pq.addOne((new PQNode(top.dist + 1, next)))
-            visited.add(next)
-          }
-        }
 
-        //println("PQ Node is " + pq)
-        //println("        ")
-      }
-    }
-
-    //println("Max Dist is " + maxDist)
-    //Npw maxDist is found. Do a BFS and discard those nodes whopse distance is greater
-    pq.clear()
     visited.clear()
     val q = new mutable.Queue[PQNode]()
     q.addOne(new PQNode(0,new Node(0,0)))
 
     var bfsFoundDist = Int.MaxValue
+    maxDist = 3*(math.abs(target.x) + math.abs(target.y))
     while (q.isEmpty == false && bfsFoundDist == Int.MaxValue) {
       val top = q.dequeue()
       if (top.node == target) {
