@@ -1,57 +1,69 @@
 import scala.collection.mutable
+import scala.collection.immutable
 
+case class Index(val s : Set[Int],val t : immutable.TreeSet[Int])
 object Solution {
   def minDeletionSize(A: Array[String]): Int = {
-    val rows = A.length
-    val cols = A(0).length
-    val colSet = Range(0,cols).toSet
-    def checkSorted(d : Set[Int]) : Boolean = {
-      val trueCols = colSet.diff(d)
-      var ifSorted = true
-
-      for (j <- 0 to rows-1 if ifSorted == true) {
-        var prev = ('a' - 1).toChar
-        for (k <- 0 to cols - 1 if ifSorted == true) {
-          if (d.contains(k) == false) {
-            if (A(j)(k) < prev) {
-              ifSorted = false
-            } else {
-              prev = A(j)(k)
-            }
+    def checkSorted(j : Int,pendingCols : immutable.TreeSet[Int]) : Boolean = {
+      if (pendingCols.size == 1) {
+        true
+      }else {
+        var sorted = true
+        var prev = pendingCols.head
+        for (t <- pendingCols.tail if sorted == true) {
+          if (A(j)(t) < A(j)(prev)) {
+            sorted = false
+          }else {
+            prev = t
           }
         }
 
+        sorted
       }
-
-      ifSorted
     }
 
-    val cache = new mutable.HashMap[Set[Int],Int]()
-    def itr(d : Set[Int]) : Int = {
-      if (checkSorted(d)) {
-        d.size
+    def checkAllSorted(s : Set[Int], p : immutable.TreeSet[Int]) : Boolean = {
+      var allSorted = true
+      for (j <- s if allSorted == true) {
+        if (checkSorted(j,p) == false) {
+          allSorted = false
+        }
+      }
+
+      allSorted
+    }
+
+    val cache = new mutable.HashMap[Index,Int]()
+    def itr(unsortedRows : Set[Int],pendingCols : immutable.TreeSet[Int]) : Int = {
+      if (unsortedRows.size == 0 || pendingCols.size == 1 || checkAllSorted(unsortedRows,pendingCols)) {
+        0
       }else {
-        if (cache.contains(d)) {
-          cache.get(d).get
+        val index = new Index(unsortedRows,pendingCols)
+        if (cache.contains(index)) {
+          cache.get(index).get
         }else {
-          var minDeletion = Int.MaxValue
-          for (j <- 0 to cols - 1) {
-            if (d.contains(j) == false) {
-              //col not removed. lets remove it
-              val option1 = itr(d.+(j))
-              if (option1 < minDeletion) {
-                minDeletion = option1
+          var globalCount = Int.MaxValue
+          for (j <- pendingCols) {
+            val colLst = pendingCols.-(j)
+            val sortedlst = new mutable.HashSet[Int]()
+            for (k <- unsortedRows) {
+              if (checkSorted(k, colLst)) {
+                sortedlst.add(k)
               }
             }
+
+            val count = 1 + itr(unsortedRows.diff(sortedlst.toSet), colLst)
+            if (count < globalCount) {
+              globalCount = count
+            }
           }
 
-          cache += ((d,minDeletion))
-          minDeletion
+          cache += ((index,globalCount))
+          globalCount
         }
-
       }
     }
 
-    itr(Set())
+    itr(Range(0,A.length).toSet,new immutable.TreeSet[Int].++(Range(0,A(0).length).toSet))
   }
 }
