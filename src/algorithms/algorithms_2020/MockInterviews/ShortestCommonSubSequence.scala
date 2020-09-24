@@ -53,18 +53,30 @@ object Solution {
           cache.get(index).get
         }else {
           if (str1(j) == str2(k)) {
-            val retValue = itr(j - 1, k - 1) ++ str1(j).toString
+            val pending = itr(j - 1, k - 1) //++ str1(j).toString
+            val stringBuilder = new StringBuilder
+            stringBuilder.appendAll(pending)
+            stringBuilder.append(str1(j))
+            val retValue = stringBuilder.toString()
             cache += ((index,retValue))
             retValue
           } else {
             val opt1 = itr(j - 1, k)
             val opt2 = itr(j, k - 1)
             if (opt1.length <= opt2.length) {
-              val retValue = opt1 ++ str1(j).toString
+
+              val stringBuilder = new StringBuilder
+              stringBuilder.appendAll(opt1)
+
+              //val retValue = opt1 ++ str1(j).toString
+              val retValue = stringBuilder.append(str1(j)).toString()
               cache += ((index,retValue))
               retValue
             } else {
-              val retValue = opt2 ++ str2(k).toString
+              val stringBuilder = new StringBuilder
+              stringBuilder.appendAll(opt2)
+              stringBuilder.append(str2(k))
+              val retValue = stringBuilder.toString()
               cache += ((index,retValue))
               retValue
             }
