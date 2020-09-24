@@ -1,47 +1,54 @@
 import scala.collection.mutable
 
+case class Index(val lst : (Int,Int),val lValue : Int,val rValue : Int)
 object Solution {
   def maxCoins(nums: Array[Int]): Int = {
-    def itr(present : scala.collection.immutable.TreeSet[Int]) : Int = {
-      val cache = new mutable.HashMap[scala.collection.immutable.TreeSet[Int],Int]()
-      if (present.size == 1) {
-        //last one
-        nums(present.head)
+    val cache = new mutable.HashMap[Index,Int]()
+    def itr(lst : (Int,Int),lValue : Int,rValue : Int) : Int = {
+      //println(lst + " " + lValue + " " + rValue)
+      if (lst._2==lst._1) {
+        nums(lst._1) * lValue * rValue
       }else {
-        if (cache.contains(present)) {
-          cache.get(present).get
+        val index = new Index(lst,lValue,rValue)
+        if (cache.contains(index)) {
+          cache.get(index).get
         }else {
-          var maxCoin = 0
-          for (j <- present) {
-            val left = present.rangeUntil(j)
-            val right = present.rangeFrom(j + 1)
+          var maxCoins = 0
+          for (j <- lst._1 to lst._2-1) {
+            //val (left, right) = lst.splitAt(j)
+            val (left,right) = ((lst._1,j),(j+1,lst._2))
+            //Focus on Left
+            val leftCoin = itr(left, lValue, nums(right._1))
+            //Left is burnt completely
+            val rightCoin = itr(right, lValue, rValue)
 
-            var leftSize = 1
-            if (left.size > 0) {
-              leftSize = nums(left.last)
-            }
+            val c1 = leftCoin + rightCoin
 
-            var rightSize = 1
-            if (right.size > 0) {
-              rightSize = nums(right.head)
-            }
+            //reverse the order
+            //left is burst later
+            val rightCoin1 = itr(right, nums(left._2), rValue)
+            //rigjht  is done
+            val leftCoin1 = itr(left, lValue, rValue)
+            val c2 = leftCoin1 + rightCoin1
 
-            val coins = (leftSize * rightSize * nums(j)) + itr(present.-(j))
-            if (coins > maxCoin) {
-              maxCoin = coins
+            val maxValue = math.max(c1, c2)
+            if (maxValue > maxCoins) {
+              maxCoins = maxValue
             }
           }
 
-          cache += ((present,maxCoin))
-          maxCoin
+          cache += ((index,maxCoins))
+          maxCoins
         }
-
-
       }
     }
 
-    val present = new scala.collection.immutable.TreeSet[Int]()
 
-    itr(present.++(Range(0,nums.length).toList))
+
+    itr((0,nums.length-1),1,1)
+  }
+
+  def main(args: Array[String]): Unit = {
+    println(maxCoins(Array(3,1,5,8)))
   }
 }
