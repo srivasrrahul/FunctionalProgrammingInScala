@@ -21,47 +21,44 @@ object Solution {
       itr(0,s.length-1)
     }
 
-    def commonSubSeq(x1 : Int,x2 : Int,y1 : Int,y2 : Int) : Set[String] = {
-      //println(x1 + " " + y1 + " " + x2 + " " + y2)
-      if (x1 == x2) {
-        if (s2.substring(y1,y2+1).contains(s1(x1))) {
-          Set(s1(x1).toString)
-        }else {
-          Set()
-        }
-      }else {
-        if (y1 == y2) {
-          if (s1.substring(x1,x2+1).contains(s2(y1))) {
-            Set(s2(y1).toString)
-          }else {
-            Set()
-          }
-        }else {
-          if (s1(x2) == s2(y2)) {
-            val lst = commonSubSeq(x1,x2-1,y1,y2-1)
-            val retValue = new mutable.HashSet[String]
-            for (l <- lst) {
-              retValue.add(l ++ s1(x2).toString)
-            }
-
-            retValue.add(s1(x2).toString)
-            retValue.addAll(lst).toSet
-          }else {
-            val l1 = commonSubSeq(x1,x2-1,y1,y2)
-            val l2 = commonSubSeq(x1,x2,y1,y2-1)
-
-            l1 ++ l2
-
-
-          }
-        }
-
+    val arr = Array.ofDim[Set[String]](s1.length,s2.length)
+    var matched : Set[String] = Set()
+    for (j <- 0 to arr.length-1) {
+      if (s1(j) == s2(0)) {
+        matched = Set(s2(0).toString)
       }
+
+      arr(j)(0) = matched
     }
 
-    val common = commonSubSeq(0,s1.length-1,0,s2.length-1).filter(x => isPalindrome(x))
-    println(common)
-    1
+    matched = Set()
+
+    for (k <- 0 to arr(0).length-1) {
+      if (s2(k) == s1(0)) {
+        matched = Set(s1(0).toString)
+      }
+
+      arr(0)(k) = matched
+    }
+
+    for (j <- 1 to arr.length-1) {
+      for (k <- 1 to arr(j).length-1) {
+        if (s1(j) == s2(k)) {
+          val prev = arr(j-1)(k-1)
+          val set = new mutable.HashSet[String]()
+          for (p <- prev) {
+            set.add(p ++ s1(j).toString)
+          }
+
+          set.addAll(prev)
+          set.add(s1(j).toString)
+          arr(j)(k) = set.toSet
+        }else {
+          arr(j)(k) = arr(j-1)(k) ++ arr(j)(k-1)
+        }
+      }
+    }
+    arr(s1.length-1)(s2.length-1).filter(x => isPalindrome(x)).size
   }
 
   def main(args: Array[String]): Unit = {
