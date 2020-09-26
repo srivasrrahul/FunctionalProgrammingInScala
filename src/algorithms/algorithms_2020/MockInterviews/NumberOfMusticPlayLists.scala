@@ -1,6 +1,6 @@
 import scala.collection.mutable
 
-case class Index(val l : Int,val pl :  scala.collection.immutable.Map[Int,Int] )
+case class Index(val l : Int,val pl :  Set[Int] )
 object Solution {
   def numMusicPlaylists(N: Int, L: Int, K: Int): Int = {
     val cache = new mutable.HashMap[Index,Option[Int]]()
@@ -9,6 +9,7 @@ object Solution {
       if (l == L+1) {
         //No need to add
 
+        //println(playList)
         if (playList.size == N) {
           //println(playList)
           Some(1)
@@ -16,8 +17,9 @@ object Solution {
           None
         }
       }else {
-        val index = new Index(l,playList)
+        val index = new Index(l,playList.keys.toSet)
         if (cache.contains(index)) {
+          //println("test")
           cache.get(index).get
         }else {
           var count = 0
