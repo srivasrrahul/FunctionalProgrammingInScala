@@ -1,65 +1,58 @@
 import scala.collection.mutable
+import scala.collection.mutable.ListBuffer
 
 case class Index(val l : Int,val pl :  Set[Int] )
 object Solution {
   def numMusicPlaylists(N: Int, L: Int, K: Int): Int = {
-    val cache = new mutable.HashMap[Index,Option[Int]]()
-    def itr(l : Int,playList : scala.collection.immutable.Map[Int,Int]) : Option[Int] = { //Tree Map is songId and index
 
-      if (l == L+1) {
-        //No need to add
-
-        //println(playList)
-        if (playList.size == N) {
-          //println(playList)
-          Some(1)
-        }else {
-          None
-        }
+    def itr(l : Int,n : Int) : List[List[Int]] = {
+      //println(l + "  " + n)
+      if (l == 1) {
+        List(List(n))
       }else {
-        val index = new Index(l,playList.keys.toSet)
-        if (cache.contains(index)) {
-          //println("test")
-          cache.get(index).get
-        }else {
-          var count = 0
-          for (j <- 1 to N) {
-            val lastPlayedIndex = playList.getOrElse(j,-1)
-            if (lastPlayedIndex != -1) {
-              if (l - K-1 < lastPlayedIndex) {
-                //Can't add
-              } else {
-                val c = itr(l + 1, playList.+((j, l)))
-                if (c.isDefined) {
-                  count = (count + c.get) % (Math.pow(10, 9) + 7).toInt
+        var count = 0
+        val lstBuffer = new ListBuffer[List[Int]]
+        for (j <- 1 to N) {
+          if (j != n) {
+            val lsts = itr(l-1,j)
+            //println(l + " " + n + " " + (l-1) + " " + j + " " + lsts)
+
+            for (lst <- lsts) {
+              var k = 1
+              var canAdded = true
+              for (ls <- lst if k <= K) {
+                if (ls == n) {
+                  canAdded = false
                 }
+                k = k + 1
               }
-            } else {
-              val c = itr(l + 1, playList.+((j,l)))
-              if (c.isDefined) {
-                count = (count + c.get) % (Math.pow(10, 9) + 7).toInt
+
+              if (canAdded) {
+                lstBuffer.append(n :: lst)
               }
+
             }
 
-          }
 
-          if (count > 0) {
-            cache += ((index,Some(count)))
-            Some(count)
-          } else {
-            cache += ((index,None))
-            None
           }
+        }
+
+        lstBuffer.toList
+      }
+    }
+
+    var count = 0
+    for (j <- 1 to N) {
+      val lsts  = itr(L,j)
+      println(lsts)
+      for (lst <- lsts) {
+        if (lst.toSet.size == N) {
+          count = count + 1
         }
       }
     }
 
-    val count = itr(1,scala.collection.immutable.Map[Int,Int]())
-    if (count.isDefined) {
-      count.get
-    }else {
-      -1
-    }
+    count
   }
 
   def main(args: Array[String]): Unit = {
