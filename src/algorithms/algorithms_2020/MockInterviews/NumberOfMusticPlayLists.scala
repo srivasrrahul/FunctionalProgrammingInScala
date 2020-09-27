@@ -1,60 +1,34 @@
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 
-case class Index(val l : Int,val pl :  Set[Int] )
+case class Index(val l : Int,val n :  Int )
 object Solution {
   def numMusicPlaylists(N: Int, L: Int, K: Int): Int = {
 
-    var arr = new mutable.ArrayBuffer[List[List[Int]]]()
-    for (j <- 0 to N-1) {
-      arr.append(List(List(j)))
-    }
-
-    for (l <- 2 to L) {
-      var newArr = new mutable.ArrayBuffer[List[List[Int]]]()
-      for (j <- 0 to N-1) {
-        val lstBuffer = new ListBuffer[List[Int]]
-        for (k <- 0 to N-1) {
-          if (j != k) {
-            val lsts = arr(k)
-            for (lst <- lsts) {
-              var k = 1
-              var canAdded = true
-              for (ls <- lst if k <= K) {
-                if (ls == j) {
-                  canAdded = false
-                }
-
-                k = k + 1
-              }
-
-              if (canAdded) {
-                lstBuffer.append(j :: lst)
-              }
-            }
-          }
+    val cache = new mutable.HashMap[Index,Long]()
+    def itr(l : Int, n : Int) : Long = {
+      if (l==1) {
+        if (n == 1) {
+          N.toLong
+        }else {
+          0.toLong
         }
-
-        newArr.append(lstBuffer.toList)
-      }
-
-      println(newArr)
-
-      arr.clear()
-      arr = newArr
-    }
-
-
-    var count = 0
-    for (lsts <- arr) {
-      for (lst <- lsts) {
-        if (lst.toSet.size == N) {
-          count = count + 1
+      }else {
+        val index = new Index(l,n)
+        if (cache.contains(index)) {
+          cache.get(index).get
+        }else {
+          val c1 = itr(l - 1, n - 1) * (N - (n - 1))
+          val c2 = itr(l - 1, n) * math.max(n - K, 0)
+          val retValue = (c1 + c2) % ((Math.pow(10, 9) + 7).toInt)
+          cache += ((index,retValue))
+          retValue
         }
       }
     }
 
-    count
+    itr(L,N).toInt
+
   }
 
   def main(args: Array[String]): Unit = {
