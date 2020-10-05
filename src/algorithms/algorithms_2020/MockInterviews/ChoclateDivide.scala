@@ -60,7 +60,7 @@ object Solution {
             }
 
             //println(i + " " + j + " " + k + " : " + retValue)
-            //cache += ((index,retValue))
+            cache += ((index,retValue))
             retValue
           }
 
