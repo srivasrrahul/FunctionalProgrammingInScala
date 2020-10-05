@@ -2,7 +2,7 @@ import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 
 case class Point(val x : Int,val y : Int)
-case class Index(val p : Point,val s : Set[Point])
+case class Index(val p : Point)
 object Solution {
   def longestIncreasingPath(matrix: Array[Array[Int]]): Int = {
     if (matrix.isEmpty) {
@@ -41,17 +41,16 @@ object Solution {
 
       val cache = new mutable.HashMap[Index, Int]()
 
-      def lis(point: Point, path: Set[Point]): Int = {
-        val index = new Index(point, path)
+      def lis(point: Point): Int = {
+        val index = new Index(point)
         if (cache.contains(index)) {
           cache.get(index).get
         } else {
           val nextPoints = next(point)
-          val newPath = path.+(point)
-          var maxPathLen = newPath.size
+          var maxPathLen = 1
           for (nextPoint <- nextPoints) {
-            if (path.contains(nextPoint) == false && getVal(nextPoint) > getVal(point)) {
-              val s = lis(nextPoint, newPath)
+            if (getVal(nextPoint) > getVal(point)) {
+              val s = 1+lis(nextPoint)
               if (s > maxPathLen) {
                 maxPathLen = s
               }
@@ -66,7 +65,7 @@ object Solution {
       var maxPathLen = 0
       for (j <- 0 to rows - 1) {
         for (k <- 0 to cols - 1) {
-          val s = lis(new Point(j, k), Set())
+          val s = lis(new Point(j, k))
           if (s > maxPathLen) {
             maxPathLen = s
           }
