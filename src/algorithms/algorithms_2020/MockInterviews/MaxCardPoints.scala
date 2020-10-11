@@ -1,19 +1,21 @@
+import scala.collection.mutable
+
+case class Index(j : Int,k : Int,n : Int)
 object Solution {
   def maxScore(cardPoints: Array[Int], K: Int): Int = {
-     def itr(j : Int,k : Int,n : Int) : Int = {
-       if (n == 0) {
-         0
-       }else {
-         if (j == k) {
-           cardPoints(j)
-         }else {
-           val opt1 = cardPoints(j) + itr(j+1,k,n-1)
-           val opt2 = cardPoints(k) + itr(j,k-1,n-1)
-           math.max(opt1,opt2)
-         }
-       }
-     }
+    var currentSum = 0
+    for (j <- 0 to K-1) {
+      currentSum = currentSum + cardPoints(j)
+    }
 
-    itr(0,cardPoints.length-1,K)
+    var maxSum = currentSum
+    var tail = 0
+    for (j <- K to cardPoints.length-1) {
+      currentSum = currentSum + cardPoints(j) - cardPoints(tail)
+      tail = tail + 1
+      maxSum = math.max(currentSum,maxSum)
+    }
+
+    maxSum
   }
 }
