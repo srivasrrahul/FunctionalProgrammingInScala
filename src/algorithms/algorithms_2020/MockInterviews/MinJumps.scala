@@ -8,55 +8,62 @@ object Solution {
       val defSet = valIndex.getOrElseUpdate(arr(j),new mutable.HashSet[Int]())
       defSet.add(j)
     }
-    val countCache = new mutable.HashMap[Int,Option[Int]]()
-    def itr(j : Int,visited : Set[Int]) : Option[Int] = {
-      if (j == arr.length-1) {
-        Some(0)
-      }else {
-        if (visited.contains(j)) {
-          None
-        }else {
-          if (countCache.contains(j)) {
-            countCache.get(j).get
-          }else {
-            val options = new ArrayBuffer[Int]()
-            if (j + 1 < arr.length) {
-              val res = itr(j + 1, visited.+(j))
-              if (res.isDefined) {
-                options.append(1 + res.get)
-              }
+
+
+
+    val visited = new mutable.HashSet[Int]()
+    val distance = new mutable.HashMap[Int,Int]() //parent of j to k
+    for (j <- 0 to arr.length-1) {
+      distance.addOne((j,Int.MaxValue))
+    }
+
+    distance += ((0,0))
+
+    val pq = mutable.PriorityQueue.empty[(Int,Int)](new Ordering[(Int,Int)] {
+      override def compare(x: (Int, Int), y: (Int, Int)): Int = {
+        y._2.compareTo(x._2)
+      }
+    })
+
+    pq.addOne((0,0))
+
+    var endFound = false
+    while (pq.isEmpty == false && endFound == false) {
+      val (topId,topDist) = pq.dequeue()
+
+      if (topId+1 < arr.length) {
+        if (distance.get(topId+1).get == Int.MaxValue || (distance.get(topId+1).get > (topDist+1))) {
+          distance += ((topId+1,topDist+1))
+          pq.addOne((topId+1,topDist+1))
+        }
+      }
+
+      if (topId-1 >= 0) {
+        if (distance.get(topId-1).get == Int.MaxValue || distance.get(topId-1).get> (topDist+1)) {
+          distance += ((topId-1,topDist+1))
+          pq.addOne((topId-1,topDist+1))
+        }
+      }
+
+
+      val topValue = arr(topId)
+      if (valIndex.contains(topValue)) {
+        for (next <- valIndex.get(topValue).get) {
+          if (next != topId) {
+            if (distance.get(next).get == Int.MaxValue || distance.get(next).get> (topDist+1)) {
+              distance += ((next,topDist+1))
+              pq.addOne((next,topDist+1))
             }
-
-            if (j - 1 >= 0) {
-              val res = itr(j - 1, visited.+(j))
-              if (res.isDefined) {
-                options.append(1 + res.get)
-              }
-            }
-
-            for (k <- valIndex.get(arr(j)).get) {
-              if (j != k && arr(j) == arr(k)) {
-                val res = itr(k, visited.+(j))
-                if (res.isDefined) {
-                  options.append(1 + res.get)
-                }
-              }
-            }
-
-
-            if (options.isEmpty == false) {
-              countCache += ((j,Some(options.min)))
-              Some(options.min)
-            } else {
-              countCache += ((j,None))
-              None
-            }
-
           }
         }
       }
+
+      valIndex.remove(topValue)
+      if (topId == arr.length-1) {
+        endFound = true
+      }
     }
 
-    itr(0,Set()).get
+    distance.get(arr.length-1).get
   }
 }
